@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.12.0.schema.json
+
+PackageIdentifier: KlowdfurrRad.TrayAuth
+PackageVersion: 1.0.0
+
+Platform:
+- Windows.Desktop
+MinimumOSVersion: 10.0.17763.0
+
+# Inno Setup. Declaring the type is enough: winget applies the correct silent switches itself,
+# so there is no InstallerSwitches block to get wrong.
+InstallerType: inno
+
+# The installer is per-user by design - it writes only to HKCU and %LOCALAPPDATA%, so it never
+# needs elevation. Declaring the scope stops winget from trying to install it machine-wide.
+Scope: user
+InstallModes:
+- interactive
+- silent
+- silentWithProgress
+
+UpgradeBehavior: install
+ReleaseDate: 2026-07-28
+
+Installers:
+- Architecture: x64
+  InstallerUrl: https://github.com/KlowdfurrRad/TrayAuth/releases/download/v1.0.0/TrayAuth-Setup-1.0.0.exe
+  InstallerSha256: 8B1CB1487258F0BD3D9E061A6D85B7A9659F9529D12888B6A31FA7EF36D7D83A
+  # Inno derives this from the AppId in the installer script and it must never change between
+  # versions, otherwise upgrades install side-by-side instead of replacing.
+  ProductCode: '{8F3C1A64-2D57-4E9B-9A21-6B0E7C5D4F18}_is1'
+  AppsAndFeaturesEntries:
+  - DisplayName: TrayAuth
+    Publisher: KlowdfurrRad
+    DisplayVersion: 1.0.0
+    ProductCode: '{8F3C1A64-2D57-4E9B-9A21-6B0E7C5D4F18}_is1'
+    InstallerType: inno
+
+ManifestType: installer
+ManifestVersion: 1.12.0
