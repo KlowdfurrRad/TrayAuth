@@ -25,11 +25,11 @@ image, usually behind a "can't scan the code?" link.
 ## Install
 
 ```powershell
-winget install Raadhes.TrayAuth
+winget install KlowdfurrRad.TrayAuth
 ```
 
-Or download `TrayAuth-Setup-*.exe` from the [Releases page](https://github.com/Raadhes/TrayAuth/releases)
-and run it.
+Or download `TrayAuth-Setup-*.exe` from the
+[Releases page](https://github.com/KlowdfurrRad/TrayAuth/releases) and run it.
 
 Either way you get a Start Menu entry, an entry in Settings → Installed apps, and start-with-Windows
 so the icon is always in the tray. **No administrator rights and no UAC prompt** — everything lives

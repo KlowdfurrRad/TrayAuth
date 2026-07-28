@@ -15,10 +15,14 @@
 #endif
 
 #define AppName "TrayAuth"
-#define AppDisplayName "TrayAuth - Authenticator"
-#define AppPublisher "Raadhes"
+
+; Kept identical to the winget manifest's PackageName. The Windows Package Manager correlates
+; installed software by the Add/Remove Programs entry, so a mismatch here quietly breaks
+; "winget upgrade" and "winget export" for this package.
+#define AppDisplayName "TrayAuth"
+#define AppPublisher "KlowdfurrRad"
 #define AppExeName "TrayAuth.exe"
-#define AppUrl "https://github.com/Raadhes/TrayAuth"
+#define AppUrl "https://github.com/KlowdfurrRad/TrayAuth"
 
 [Setup]
 ; This GUID identifies the application to Windows and to winget. It must never change
@@ -33,8 +37,10 @@ AppSupportURL={#AppUrl}/issues
 AppUpdatesURL={#AppUrl}/releases
 
 ; Per-user install - no elevation, no UAC.
+;
+; No PrivilegesRequiredOverridesAllowed: that would let Inno raise an "all users or just me?"
+; dialog, which a silent install (what winget runs) must never do. Always per-user, no prompt.
 PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=dialog
 
 DefaultDirName={autopf}\{#AppName}
 DefaultGroupName={#AppDisplayName}
