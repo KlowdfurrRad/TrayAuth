@@ -1,7 +1,7 @@
 # TrayAuth
 
-Google Authenticator, but in the Windows taskbar. Click the tray icon and a panel slides up out of
-the taskbar with your live codes; click a code to copy it.
+Two-factor authentication codes in the Windows taskbar. Click the tray icon and a panel slides up
+out of the taskbar with your live codes; click a code to copy it.
 
 Accounts are added by typing the **setup key** — the base32 string a site shows next to its QR
 image, usually behind a "can't scan the code?" link.
