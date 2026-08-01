@@ -15,6 +15,9 @@ bash install.sh
 (`bash install.sh`, not `./install.sh` - the tarball is built on Windows, which cannot record
 the executable bit. The script restores correct permissions on everything it installs.)
 
+**No sudo.** This is a per-user install into `~/.local`; with sudo it would land in root's home
+instead of yours. The script now refuses to run as root for exactly that reason.
+
 No sudo - everything goes under `~/.local`. Then, **before anything else**:
 
 ```bash

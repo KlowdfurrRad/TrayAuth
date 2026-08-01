@@ -6,6 +6,15 @@
 # script must work without one. It restores proper modes on everything it installs.
 set -eu
 
+# Per-user install: running under sudo would silently install into /root's home instead of
+# yours. Refuse outright - "sudo to install" is muscle memory worth interrupting here.
+if [ "$(id -u)" -eq 0 ]; then
+    echo "Do NOT run this with sudo." >&2
+    echo "TrayAuth installs into YOUR home directory. Run it as yourself:" >&2
+    echo "    bash install.sh" >&2
+    exit 1
+fi
+
 HERE="$(cd "$(dirname "$0")" && pwd)"
 APP_DIR="$HOME/.local/share/trayauth"
 BIN_DIR="$HOME/.local/bin"
