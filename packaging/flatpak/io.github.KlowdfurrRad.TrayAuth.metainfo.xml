@@ -43,11 +43,15 @@
   </branding>
 
   <screenshots>
-    <!-- Flathub: window only, no wallpaper, real content rather than an empty state, and a
-         single-sentence caption with no trailing punctuation. -->
+    <!-- Flathub: app surface only, no wallpaper, real content rather than an empty state, and
+         single-sentence captions with no trailing punctuation. -->
     <screenshot type="default">
       <image>https://raw.githubusercontent.com/KlowdfurrRad/TrayAuth/main/packaging/flatpak/screenshots/panel.png</image>
       <caption xml:lang="en">Live two-factor codes with countdown rings</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/KlowdfurrRad/TrayAuth/main/packaging/flatpak/screenshots/tray.png</image>
+      <caption xml:lang="en">Copying a code straight from the tray menu</caption>
     </screenshot>
   </screenshots>
 
@@ -65,11 +69,12 @@
   </keywords>
 
   <releases>
-    <release version="0.1.0" date="2026-07-28" type="development">
+    <!-- Must track the version in TrayAuth.Desktop.csproj: this is what the store shows. -->
+    <release version="0.2.0" date="2026-08-02" type="development">
       <description>
-        <p>First Linux release: tray menu with live codes, codes panel, Google Authenticator
-        QR import, encrypted vault with keyring-backed key, export and import compatible with
-        the Windows build.</p>
+        <p>Tray menu with live codes, codes panel with countdown rings, Google Authenticator
+        QR import, encrypted vault with a keyring-backed key, and export and import files
+        interchangeable with the Windows and macOS builds.</p>
       </description>
     </release>
   </releases>
