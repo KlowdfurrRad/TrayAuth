@@ -5,7 +5,9 @@
     "public statement of which services you protect, and any email in it belongs to a person",
     "who did not agree to appear in an app store.",
     "",
-    "All three share the RFC 6238 example secret, so the codes are real but protect nothing."
+    "The secrets are public test vectors, so the codes are real but protect nothing. They are",
+    "deliberately different from each other: identical codes on three rows read as a rendering",
+    "bug in a store screenshot."
   ],
   "format": "trayauth-export",
   "version": 1,
@@ -24,20 +26,20 @@
     {
       "issuer": "Example Bank",
       "label": "demo.user",
-      "secret": "JBSWY3DPEHPK3PXP",
+      "secret": "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
       "digits": 6,
       "period": 30,
       "algorithm": "SHA1",
-      "otpauth": "otpauth://totp/Example%20Bank:demo.user?secret=JBSWY3DPEHPK3PXP&issuer=Example%20Bank&algorithm=SHA1&digits=6&period=30"
+      "otpauth": "otpauth://totp/Example%20Bank:demo.user?secret=GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ&issuer=Example%20Bank&algorithm=SHA1&digits=6&period=30"
     },
     {
       "issuer": "Mail",
       "label": "demo@example.org",
-      "secret": "JBSWY3DPEHPK3PXP",
+      "secret": "MZXW6YTBOIFA4RSGIZTEMRSHIVDEQSKB",
       "digits": 6,
       "period": 30,
       "algorithm": "SHA1",
-      "otpauth": "otpauth://totp/Mail:demo%40example.org?secret=JBSWY3DPEHPK3PXP&issuer=Mail&algorithm=SHA1&digits=6&period=30"
+      "otpauth": "otpauth://totp/Mail:demo%40example.org?secret=MZXW6YTBOIFA4RSGIZTEMRSHIVDEQSKB&issuer=Mail&algorithm=SHA1&digits=6&period=30"
     }
   ]
 }
