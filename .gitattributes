@@ -1,0 +1,5 @@
+# Files that execute on Linux must keep LF endings no matter what Windows git thinks:
+# CRLF in a shebang line means "/bin/sh^M: bad interpreter".
+*.sh text eol=lf
+packaging/linux/trayauth.desktop text eol=lf
+packaging/linux/trayauth.svg text eol=lf
