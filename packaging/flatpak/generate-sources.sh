@@ -1,16 +1,31 @@
 #!/bin/sh
-# Generates nuget-sources.json - the pinned list of every NuGet package the flatpak build
+# Regenerates nuget-sources.json - the pinned list of every NuGet package the flatpak build
 # needs, with URLs and hashes, because Flathub builds run with no network access.
 #
-# Run on a machine with flatpak + the dotnet8 SDK extension installed (see README-FLATPAK.md).
+# YOU PROBABLY DO NOT NEED THIS. nuget-sources.json is committed to the repository and is
+# regenerated on the Windows side by tools/generate-nuget-sources.ps1. Run this only if you
+# have changed a package reference or the pinned RuntimeFrameworkVersion and cannot use the
+# PowerShell tool.
 set -eu
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
-GENERATOR_URL="https://raw.githubusercontent.com/flathub/flatpak-builder-tools/master/dotnet/flatpak-dotnet-generator.py"
+GENERATOR_URL="https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/dotnet/flatpak-dotnet-generator.py"
 GENERATOR=/tmp/flatpak-dotnet-generator.py
 
 echo "Fetching the Flathub dotnet generator..."
-curl -fsSL "$GENERATOR_URL" -o "$GENERATOR"
+if ! curl -fsSL "$GENERATOR_URL" -o "$GENERATOR"; then
+    echo >&2
+    echo "Could not download the generator from:" >&2
+    echo "  $GENERATOR_URL" >&2
+    echo >&2
+    echo "The upstream layout may have moved. This script is optional:" >&2
+    echo "nuget-sources.json is already committed next to this script, so you can go" >&2
+    echo "straight to the build:" >&2
+    echo >&2
+    echo "  flatpak-builder --user --install --force-clean build io.github.KlowdfurrRad.TrayAuth.yml" >&2
+    echo >&2
+    exit 1
+fi
 
 echo "Resolving the package closure (runs dotnet restore inside the SDK extension)..."
 python3 "$GENERATOR" \

@@ -17,10 +17,13 @@ Build and install:
 git clone https://github.com/KlowdfurrRad/TrayAuth.git   # or: git -C TrayAuth pull
 cd TrayAuth/packaging/flatpak
 
-bash generate-sources.sh    # pins every NuGet package (Flathub builds are offline)
 flatpak-builder --user --install --force-clean build io.github.KlowdfurrRad.TrayAuth.yml
 flatpak run io.github.KlowdfurrRad.TrayAuth
 ```
+
+`nuget-sources.json` is already committed here, so there is nothing to generate first.
+(`generate-sources.sh` exists only for regenerating it on Linux after a dependency change;
+the usual route is `tools/generate-nuget-sources.ps1` on the Windows side.)
 
 ## What to check
 

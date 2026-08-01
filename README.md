@@ -183,10 +183,11 @@ flatpak install --user -y flathub org.freedesktop.Platform//24.08 \
 
 # build, install, run
 cd packaging/flatpak
-bash generate-sources.sh    # pins every NuGet package - Flathub builds run offline
 flatpak-builder --user --install --force-clean build io.github.KlowdfurrRad.TrayAuth.yml
 flatpak run io.github.KlowdfurrRad.TrayAuth
 ```
+
+The pinned NuGet package list is already committed, so there is nothing to generate first.
 
 The sandbox bundles its own `wl-copy` and `secret-tool` (host binaries are invisible inside), asks
 for no filesystem access (file dialogs go through the portal), and keeps its vault in the app's own
