@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Builds TrayAuth, and optionally packages it into a Setup.exe.
 

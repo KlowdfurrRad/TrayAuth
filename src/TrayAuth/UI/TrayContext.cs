@@ -24,6 +24,10 @@ public sealed class TrayContext : ApplicationContext
     private readonly List<ToolStripItem> _codeItems = [];
     private readonly System.Windows.Forms.Timer _menuRefresh = new() { Interval = 1000 };
 
+    private readonly DesktopContextMenu _desktopMenu = new();
+    private readonly System.Windows.Forms.Timer _desktopSync = new() { Interval = 1000 };
+    private ToolStripMenuItem _desktopMenuItem = null!;
+
     public TrayContext(uint showPanelMessage)
     {
         _panel = new PanelForm(_vault, _clipboard)
@@ -47,6 +51,25 @@ public sealed class TrayContext : ApplicationContext
 
         LoadVault();
         RegisterHotKey();
+
+        // Keeps the desktop right-click menu's labels truthful: recomputes a cheap signature
+        // every second and rewrites the registry only when a code actually rolled over or the
+        // account list changed.
+        _desktopSync.Tick += (_, _) => SyncDesktopMenu();
+        _desktopSync.Start();
+        SyncDesktopMenu();
+    }
+
+    private void SyncDesktopMenu()
+    {
+        try
+        {
+            _desktopMenu.Sync(_vault.Accounts, StartupRegistration.CurrentExecutablePath);
+        }
+        catch
+        {
+            // Never let a registry hiccup take the tray app down.
+        }
     }
 
     private void BuildMenu()
@@ -73,6 +96,18 @@ public sealed class TrayContext : ApplicationContext
         };
         _startupItem.Click += OnToggleStartup;
         _menu.Items.Add(_startupItem);
+
+        _desktopMenuItem = new ToolStripMenuItem("Codes in desktop right-click menu")
+        {
+            CheckOnClick = true,
+            Checked = _desktopMenu.IsEnabled(),
+        };
+        _desktopMenuItem.Click += (_, _) =>
+        {
+            _desktopMenu.SetEnabled(_desktopMenuItem.Checked);
+            SyncDesktopMenu();
+        };
+        _menu.Items.Add(_desktopMenuItem);
 
         _menu.Items.Add("About TrayAuth", null, (_, _) => ShowAbout());
         _menu.Items.Add(new ToolStripSeparator());
@@ -350,6 +385,7 @@ public sealed class TrayContext : ApplicationContext
     {
         if (disposing)
         {
+            _desktopSync.Dispose();
             _menuRefresh.Dispose();
             _hotKey.Dispose();
             _notifyIcon.Visible = false;

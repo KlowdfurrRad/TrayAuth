@@ -1,4 +1,4 @@
-; TrayAuth installer (Inno Setup 6)
+﻿; TrayAuth installer (Inno Setup 6)
 ;
 ; Per-user install: everything goes under the user's own profile, so this never needs
 ; administrator rights and never shows a UAC prompt. That also means winget can install it
@@ -81,6 +81,13 @@ Name: "{autoprograms}\{#AppDisplayName}"; Filename: "{app}\{#AppExeName}"
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; \
     ValueType: string; ValueName: "TrayAuth"; ValueData: """{app}\{#AppExeName}"""; \
     Flags: uninsdeletevalue; Tasks: startup
+
+; The app writes these at runtime (desktop right-click codes menu + its enable flag).
+; dontcreatekey means install leaves them alone; uninsdeletekey means uninstall removes
+; them, so no orphaned menu entry points at a deleted exe.
+Root: HKCU; Subkey: "Software\Classes\DesktopBackground\Shell\TrayAuth"; \
+    Flags: dontcreatekey uninsdeletekey
+Root: HKCU; Subkey: "Software\TrayAuth"; Flags: dontcreatekey uninsdeletekey
 
 [Run]
 Filename: "{app}\{#AppExeName}"; Description: "Start TrayAuth now"; \

@@ -50,10 +50,17 @@ asked.
 | Export everything | Tray menu → **Export all accounts…** |
 | Restore a backup | Tray menu → **Import** → **From export file…** |
 | Move in from Google Authenticator | Phone: *Settings → Transfer accounts → Export accounts*, screenshot the QR, get it to this PC, then tray menu → **Import** → **From QR image…** — or show the QR on this screen and use **Scan screen for QR code** |
+| Copy from the desktop | Right-click the desktop → **TrayAuth codes** (on Windows 11 it lives under **Show more options**, or press Shift+F10). Click an account to copy its code |
 | Close the panel | Click anywhere else, or press **Esc** |
 
 The right-click menu shows every account with its live code and seconds remaining, so day-to-day
 copying never needs the panel at all.
+
+The desktop menu works the same way: the labels show live codes (TrayAuth refreshes them as codes
+roll over), and clicking computes a fresh code at that instant — a label that went stale while the
+menu sat open can never produce a stale copy. The codes are visible to anyone looking at your
+unlocked screen, exactly like the tray menu; if you'd rather not have that, turn it off with tray
+menu → **Codes in desktop right-click menu**.
 
 QR import understands both kinds of QR: a site's ordinary `otpauth://` enrollment QR, and Google
 Authenticator's transfer QR (`otpauth-migration://`), which can carry many accounts at once. If a
@@ -144,7 +151,7 @@ src/TrayAuth/
               GoogleAuthMigration (transfer-QR protobuf), QrDecoder (ZXing), QrImport
   Interop/    TaskbarInfo (taskbar edge), HotKey, native declarations
   UI/         TrayContext, PanelForm (the slide), AccountRow, AddAccountDialog, Theme, AppIcon
-tests/        116 tests
+tests/        126 tests
 tools/MakeIcon/   generates assets/icon.ico
 packaging/    TrayAuth.iss - the Inno Setup installer
 ```
