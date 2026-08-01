@@ -1,7 +1,7 @@
 using System.Text;
 using TrayAuth.Core;
 
-namespace TrayAuth.Linux;
+namespace TrayAuth.Desktop;
 
 /// <summary>
 /// `trayauth --selftest`: proves the core on the machine it is actually running on, with no
@@ -14,8 +14,10 @@ public static class SelfTest
     {
         Console.WriteLine("TrayAuth selftest");
         Console.WriteLine("-----------------");
-        Console.WriteLine($"OS:      {System.Runtime.InteropServices.RuntimeInformation.OSDescription}");
-        Console.WriteLine($"Arch:    {System.Runtime.InteropServices.RuntimeInformation.OSArchitecture}");
+        Console.WriteLine($"OS:       {System.Runtime.InteropServices.RuntimeInformation.OSDescription}");
+        Console.WriteLine($"Arch:     {System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture} (process) / {System.Runtime.InteropServices.RuntimeInformation.OSArchitecture} (os)");
+        Console.WriteLine($"Config:   {AppPaths.ConfigDir}");
+        Console.WriteLine($"Autostart:{AppPaths.AutostartFile}");
 
         string tempDir = Path.Combine(Path.GetTempPath(), "trayauth-selftest-" + Guid.NewGuid().ToString("N"));
 
@@ -79,13 +81,15 @@ public static class SelfTest
         string vaultPath = Path.Combine(tempDir, "vault.dat");
         string keyPath = Path.Combine(tempDir, "vault.key");
 
-        var writer = new LinuxVault(vaultPath, keyPath);
+        var writer = new LocalVault(vaultPath, keyPath);
         writer.Load();
         writer.Add(new Account { Issuer = "GitHub", Label = "self@test", Secret = "JBSWY3DPEHPK3PXP" });
         writer.Add(new Account { Issuer = "AWS", Label = "root", Secret = "JBSWY3DPEHPK3PXP", Digits = 8, Algorithm = "SHA256" });
         writer.Save();
 
-        var reader = new LinuxVault(vaultPath, keyPath);
+        string keyLocation = writer.KeyStore.Describe();
+
+        var reader = new LocalVault(vaultPath, keyPath);
         if (reader.Load().Status != VaultLoadStatus.Loaded)
         {
             throw new InvalidOperationException("reload did not report Loaded");
@@ -108,7 +112,7 @@ public static class SelfTest
             throw new InvalidOperationException("secret visible in vault file");
         }
 
-        return reader.UsedKeyFileFallback ? "key file fallback (keyring unavailable)" : "keyring";
+        return "key in " + keyLocation;
     }
 
     private static string? CheckPermissions(string tempDir)
@@ -134,7 +138,7 @@ public static class SelfTest
         string vaultPath = Path.Combine(tempDir, "vault.dat");
         string keyPath = Path.Combine(tempDir, "vault.key");
 
-        var vault = new LinuxVault(vaultPath, keyPath);
+        var vault = new LocalVault(vaultPath, keyPath);
         vault.Load();
 
         ExportResult exported = ExportService.ExportAll(vault.Accounts, tempDir);
@@ -162,7 +166,7 @@ public static class SelfTest
 
         File.WriteAllText(vaultPath, "this is not a vault");
 
-        var vault = new LinuxVault(vaultPath, keyPath);
+        var vault = new LocalVault(vaultPath, keyPath);
         VaultLoadResult result = vault.Load();
 
         if (result.Status != VaultLoadStatus.Recovered)
@@ -181,13 +185,17 @@ public static class SelfTest
     private static string? CheckClipboardTool()
     {
         string? tool = ClipboardHelper.ActiveTool;
-        if (tool is null)
+        if (tool is not null)
         {
-            // A warning, not a failure: the panel clipboard still works when focused.
-            return "NONE FOUND - install wl-clipboard for tray-menu copying";
+            return tool;
         }
 
-        return tool;
+        // A warning, not a failure: the panel clipboard still works while focused. pbcopy
+        // ships with macOS, so its absence there means something stranger than a missing
+        // package.
+        return OperatingSystem.IsMacOS()
+            ? "NONE FOUND - pbcopy should ship with macOS; tray-menu copying will be limited"
+            : "NONE FOUND - install wl-clipboard for tray-menu copying";
     }
 
     private static void Expect(string expected, string actual)

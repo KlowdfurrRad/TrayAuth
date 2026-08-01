@@ -4,7 +4,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using TrayAuth.Core;
 
-namespace TrayAuth.Linux.UI;
+namespace TrayAuth.Desktop.UI;
 
 /// <summary>
 /// One account in the panel: title line, big code, countdown ring. Drawn directly, like the
@@ -30,7 +30,7 @@ public sealed class AccountRowControl : Control
     {
         _account = account;
         _copyRequested = copyRequested;
-        Height = LinuxTheme.RowHeight;
+        Height = AppTheme.RowHeight;
         Cursor = new Cursor(StandardCursorType.Hand);
     }
 
@@ -99,7 +99,7 @@ public sealed class AccountRowControl : Control
         var body = new Rect(6, 3, Bounds.Width - 12, Bounds.Height - 6);
 
         context.DrawRectangle(
-            _hovered ? LinuxTheme.SurfaceHoverBrush : LinuxTheme.SurfaceBrush,
+            _hovered ? AppTheme.SurfaceHoverBrush : AppTheme.SurfaceBrush,
             null,
             new RoundedRect(body, 8));
 
@@ -116,11 +116,11 @@ public sealed class AccountRowControl : Control
                 textLeft,
                 32,
                 12.5,
-                LinuxTheme.DangerBrush);
+                AppTheme.DangerBrush);
             return;
         }
 
-        DrawText(context, _code, textLeft - 1, 24, 24, LinuxTheme.TextBrush, bold: true, mono: true);
+        DrawText(context, _code, textLeft - 1, 24, 24, AppTheme.TextBrush, bold: true, mono: true);
 
         if (DateTime.UtcNow < _copiedUntil)
         {
@@ -137,7 +137,7 @@ public sealed class AccountRowControl : Control
         string title = _account.DisplayTitle;
         string subtitle = _account.DisplaySubtitle;
 
-        var titleText = Format(title, 11.5, LinuxTheme.TextBrush);
+        var titleText = Format(title, 11.5, AppTheme.TextBrush);
         titleText.MaxTextWidth = Math.Max(20, available);
         context.DrawText(titleText, new Point(left, 9));
 
@@ -148,7 +148,7 @@ public sealed class AccountRowControl : Control
 
             if (subtitleWidth > 24)
             {
-                var subtitleText = Format("· " + subtitle, 11.5, LinuxTheme.TextSecondaryBrush);
+                var subtitleText = Format("· " + subtitle, 11.5, AppTheme.TextSecondaryBrush);
                 subtitleText.MaxTextWidth = subtitleWidth;
                 context.DrawText(subtitleText, new Point(subtitleLeft, 9));
             }
@@ -192,10 +192,10 @@ public sealed class AccountRowControl : Control
     {
         var center = new Point(centerX, centerY);
 
-        var trackPen = new Pen(LinuxTheme.BorderBrush, ArcThickness);
+        var trackPen = new Pen(AppTheme.BorderBrush, ArcThickness);
         context.DrawEllipse(null, trackPen, center, ArcRadius, ArcRadius);
 
-        IBrush color = _secondsRemaining <= 5 ? LinuxTheme.WarningBrush : LinuxTheme.AccentBrush;
+        IBrush color = _secondsRemaining <= 5 ? AppTheme.WarningBrush : AppTheme.AccentBrush;
         double sweepDegrees = 360d * Math.Clamp(_fraction, 0d, 1d);
 
         if (sweepDegrees > 0.5)
@@ -207,7 +207,7 @@ public sealed class AccountRowControl : Control
         var seconds = Format(
             _secondsRemaining.ToString(System.Globalization.CultureInfo.InvariantCulture),
             10.5,
-            _secondsRemaining <= 5 ? LinuxTheme.WarningBrush : LinuxTheme.TextSecondaryBrush);
+            _secondsRemaining <= 5 ? AppTheme.WarningBrush : AppTheme.TextSecondaryBrush);
 
         context.DrawText(seconds, new Point(centerX - (seconds.Width / 2), centerY - (seconds.Height / 2)));
     }
@@ -246,9 +246,9 @@ public sealed class AccountRowControl : Control
             pillWidth,
             pillHeight);
 
-        context.DrawRectangle(LinuxTheme.AccentDimBrush, null, new RoundedRect(pill, pillHeight / 2));
+        context.DrawRectangle(AppTheme.AccentDimBrush, null, new RoundedRect(pill, pillHeight / 2));
 
-        var label = Format("Copied", 11, LinuxTheme.AccentBrush);
+        var label = Format("Copied", 11, AppTheme.AccentBrush);
         context.DrawText(
             label,
             new Point(pill.Center.X - (label.Width / 2), pill.Center.Y - (label.Height / 2)));

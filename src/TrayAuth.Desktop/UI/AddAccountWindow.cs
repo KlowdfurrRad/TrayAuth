@@ -5,7 +5,7 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using TrayAuth.Core;
 
-namespace TrayAuth.Linux.UI;
+namespace TrayAuth.Desktop.UI;
 
 /// <summary>
 /// Add or edit an account by typing the setup key. As on Windows, the live preview is the
@@ -32,7 +32,7 @@ public sealed class AddAccountWindow : Window
         FontFamily = new FontFamily("monospace"),
         FontSize = 22,
         FontWeight = FontWeight.Bold,
-        Foreground = LinuxTheme.TextFaintBrush,
+        Foreground = AppTheme.TextFaintBrush,
         Text = "Enter a setup key to see its code.",
     };
 
@@ -48,7 +48,7 @@ public sealed class AddAccountWindow : Window
         SizeToContent = SizeToContent.Height;
         CanResize = false;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        Background = LinuxTheme.BackgroundBrush;
+        Background = AppTheme.BackgroundBrush;
         ShowInTaskbar = false;
 
         _digits.ItemsSource = new[] { "6", "7", "8" };
@@ -87,7 +87,7 @@ public sealed class AddAccountWindow : Window
         var advanced = new Expander
         {
             Header = "Advanced",
-            Foreground = LinuxTheme.TextSecondaryBrush,
+            Foreground = AppTheme.TextSecondaryBrush,
             Content = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -130,7 +130,7 @@ public sealed class AddAccountWindow : Window
     {
         Text = text,
         FontSize = 11.5,
-        Foreground = LinuxTheme.TextSecondaryBrush,
+        Foreground = AppTheme.TextSecondaryBrush,
         Margin = new Thickness(0, 6, 0, 0),
     };
 
@@ -139,7 +139,7 @@ public sealed class AddAccountWindow : Window
         Spacing = 4,
         Children =
         {
-            new TextBlock { Text = caption, FontSize = 11, Foreground = LinuxTheme.TextFaintBrush },
+            new TextBlock { Text = caption, FontSize = 11, Foreground = AppTheme.TextFaintBrush },
             control,
         },
     };
@@ -161,7 +161,7 @@ public sealed class AddAccountWindow : Window
 
         if (string.IsNullOrWhiteSpace(candidate.Secret))
         {
-            _preview.Foreground = LinuxTheme.TextFaintBrush;
+            _preview.Foreground = AppTheme.TextFaintBrush;
             _preview.FontSize = 13;
             _preview.Text = "Enter a setup key to see its code.";
             return;
@@ -169,7 +169,7 @@ public sealed class AddAccountWindow : Window
 
         if (!candidate.TryNormalize(out string error))
         {
-            _preview.Foreground = LinuxTheme.DangerBrush;
+            _preview.Foreground = AppTheme.DangerBrush;
             _preview.FontSize = 13;
             _preview.Text = error;
             return;
@@ -178,13 +178,13 @@ public sealed class AddAccountWindow : Window
         try
         {
             TotpCode code = candidate.Generate();
-            _preview.Foreground = LinuxTheme.AccentBrush;
+            _preview.Foreground = AppTheme.AccentBrush;
             _preview.FontSize = 22;
             _preview.Text = $"{code.Grouped}    {code.SecondsRemaining}s";
         }
         catch (Exception ex)
         {
-            _preview.Foreground = LinuxTheme.DangerBrush;
+            _preview.Foreground = AppTheme.DangerBrush;
             _preview.FontSize = 13;
             _preview.Text = ex.Message;
         }

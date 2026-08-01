@@ -1,9 +1,9 @@
-<#
+﻿<#
 .SYNOPSIS
     Builds the Linux app from Windows and packages it as a tarball.
 
 .DESCRIPTION
-    Cross-compiles src/TrayAuth.Linux for linux-x64 (self-contained single file - no .NET
+    Cross-compiles src/TrayAuth.Desktop for linux-x64 (self-contained single file - no .NET
     needed on the target), stages it with the install scripts from packaging/linux, and tars
     the lot into dist/. No WSL, no Docker: plain dotnet cross-compilation.
 
@@ -15,13 +15,13 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$Version = '0.1.0-alpha'
+    [string]$Version = '0.2.0-alpha'
 )
 
 $ErrorActionPreference = 'Stop'
 
 $root = $PSScriptRoot
-$project = Join-Path $root 'src\TrayAuth.Linux\TrayAuth.Linux.csproj'
+$project = Join-Path $root 'src\TrayAuth.Desktop\TrayAuth.Desktop.csproj'
 $publishDir = Join-Path $env:LOCALAPPDATA 'TrayAuth-build\linux-publish'
 $stageName = "TrayAuth-Linux-$Version"
 $stageRoot = Join-Path $env:LOCALAPPDATA 'TrayAuth-build\linux-stage'

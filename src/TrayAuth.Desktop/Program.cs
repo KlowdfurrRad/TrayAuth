@@ -1,6 +1,6 @@
 using Avalonia;
 
-namespace TrayAuth.Linux;
+namespace TrayAuth.Desktop;
 
 public static class Program
 {

@@ -64,7 +64,7 @@ modules:
       - mkdir -p /app/bin /app/lib/trayauth
       # Offline restore: every package comes from ./nuget-sources.
       # Self-contained because the dotnet8 extension exists only at build time.
-      - dotnet publish src/TrayAuth.Linux/TrayAuth.Linux.csproj -c Release -r linux-x64
+      - dotnet publish src/TrayAuth.Desktop/TrayAuth.Desktop.csproj -c Release -r linux-x64
         --self-contained true -p:PublishSingleFile=false -p:DebugType=none
         --source ./nuget-sources -o /app/lib/trayauth
       - ln -s /app/lib/trayauth/trayauth /app/bin/trayauth

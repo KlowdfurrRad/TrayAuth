@@ -2,14 +2,14 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using ZXing;
 
-namespace TrayAuth.Linux;
+namespace TrayAuth.Desktop;
 
 /// <summary>
 /// QR decoding for image files: ImageSharp loads the pixels (no System.Drawing on Linux),
 /// ZXing finds the codes - the same reader configuration as the Windows QrDecoder, so the
 /// two platforms accept the same images.
 /// </summary>
-public static class LinuxQrDecoder
+public static class ImageQrDecoder
 {
     public static IReadOnlyList<string> DecodeImageFile(string path)
     {

@@ -1,27 +1,21 @@
-using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using TrayAuth.Core;
 
-namespace TrayAuth.Linux;
+namespace TrayAuth.Desktop;
 
 /// <summary>
-/// The Linux vault: the same <see cref="VaultDocument"/> JSON as Windows, sealed with
-/// AES-256-GCM instead of DPAPI.
-///
-/// The key lives in the GNOME keyring when possible (via the libsecret CLI, secret-tool),
-/// which gives the same trust model as DPAPI: unlocked by your login, unreadable to other
-/// accounts. Without secret-tool it falls back to a 0600 key file next to the vault - honest
-/// but weaker, so <see cref="UsedKeyFileFallback"/> lets the UI say so once.
+/// The vault for Linux and macOS: the same <see cref="VaultDocument"/> JSON the Windows app
+/// writes, sealed with AES-256-GCM instead of DPAPI, with the key held by
+/// <see cref="VaultKeyStore"/> in the platform keyring.
 /// </summary>
-public sealed class LinuxVault
+public sealed class LocalVault
 {
     private const string MagicText = "TRAYAUTHL";
     private const byte FormatVersion = 1;
     private const int NonceSize = 12;
     private const int TagSize = 16;
-    private const int KeySize = 32;
 
     private static readonly byte[] Magic = Encoding.ASCII.GetBytes(MagicText);
 
@@ -31,19 +25,19 @@ public sealed class LinuxVault
     };
 
     private readonly List<Account> _accounts = [];
-    private byte[]? _key;
+    private readonly VaultKeyStore _keyStore;
 
-    public LinuxVault(string? filePath = null, string? keyFilePath = null)
+    public LocalVault(string? filePath = null, string? keyFilePath = null)
     {
-        FilePath = filePath ?? LinuxPaths.VaultFile;
-        KeyFilePath = keyFilePath ?? LinuxPaths.KeyFile;
+        FilePath = filePath ?? AppPaths.VaultFile;
+        _keyStore = new VaultKeyStore(keyFilePath ?? AppPaths.KeyFile);
     }
 
     public string FilePath { get; }
 
-    public string KeyFilePath { get; }
+    public VaultKeyStore KeyStore => _keyStore;
 
-    public bool UsedKeyFileFallback { get; private set; }
+    public bool UsedKeyFileFallback => _keyStore.UsedKeyFileFallback;
 
     public IReadOnlyList<Account> Accounts => _accounts;
 
@@ -59,7 +53,7 @@ public sealed class LinuxVault
         try
         {
             byte[] raw = File.ReadAllBytes(FilePath);
-            byte[] json = Unseal(raw, GetOrCreateKey());
+            byte[] json = Unseal(raw, _keyStore.GetOrCreate());
 
             VaultDocument? document = JsonSerializer.Deserialize<VaultDocument>(json, SerializerOptions);
             CryptographicOperations.ZeroMemory(json);
@@ -94,9 +88,10 @@ public sealed class LinuxVault
 
         var document = new VaultDocument { Version = 1, Accounts = _accounts };
         byte[] json = JsonSerializer.SerializeToUtf8Bytes(document, SerializerOptions);
-        byte[] sealedBytes = Seal(json, GetOrCreateKey());
+        byte[] sealedBytes = Seal(json, _keyStore.GetOrCreate());
         CryptographicOperations.ZeroMemory(json);
 
+        // Write beside the target and swap, so an interrupted save cannot truncate the vault.
         string temp = FilePath + ".tmp";
         File.WriteAllBytes(temp, sealedBytes);
         FileProtection.HardenFile(temp);
@@ -189,132 +184,14 @@ public sealed class LinuxVault
 
         byte[] plaintext = new byte[ciphertext.Length];
         using var aes = new AesGcm(key, TagSize);
+
+        // Throws if the tag does not verify - tampering and a wrong key look the same here,
+        // and both end up quarantined rather than silently producing garbage accounts.
         aes.Decrypt(nonce, ciphertext, tag, plaintext);
         return plaintext;
     }
 
-    // ---- key management -----------------------------------------------------------------
-
-    private byte[] GetOrCreateKey()
-    {
-        if (_key is not null)
-        {
-            return _key;
-        }
-
-        // 1. The keyring, via secret-tool. Attributes identify the item; the label is cosmetic.
-        string? stored = RunCapture("secret-tool", ["lookup", "application", "trayauth", "type", "vault-key"], null);
-        if (TryParseKey(stored, out byte[] fromKeyring))
-        {
-            _key = fromKeyring;
-            return _key;
-        }
-
-        // 2. The key file, if a previous run fell back to it.
-        if (File.Exists(KeyFilePath)
-            && TryParseKey(File.ReadAllText(KeyFilePath), out byte[] fromFile))
-        {
-            UsedKeyFileFallback = true;
-            _key = fromFile;
-            return _key;
-        }
-
-        // 3. First run: mint a key and store it in the keyring if we can, else the file.
-        byte[] fresh = RandomNumberGenerator.GetBytes(KeySize);
-        string hex = Convert.ToHexString(fresh);
-
-        RunCapture(
-            "secret-tool",
-            ["store", "--label=TrayAuth vault key", "application", "trayauth", "type", "vault-key"],
-            hex);
-
-        string? verify = RunCapture("secret-tool", ["lookup", "application", "trayauth", "type", "vault-key"], null);
-        if (TryParseKey(verify, out byte[] verified) && verified.AsSpan().SequenceEqual(fresh))
-        {
-            _key = fresh;
-            return _key;
-        }
-
-        // Keyring unavailable (no secret-tool, no daemon, locked): key file, 0600.
-        Directory.CreateDirectory(Path.GetDirectoryName(KeyFilePath)!);
-        File.WriteAllText(KeyFilePath, hex);
-        FileProtection.HardenFile(KeyFilePath);
-        UsedKeyFileFallback = true;
-        _key = fresh;
-        return _key;
-    }
-
-    private static bool TryParseKey(string? hex, out byte[] key)
-    {
-        key = [];
-        if (string.IsNullOrWhiteSpace(hex))
-        {
-            return false;
-        }
-
-        try
-        {
-            byte[] parsed = Convert.FromHexString(hex.Trim());
-            if (parsed.Length != KeySize)
-            {
-                return false;
-            }
-
-            key = parsed;
-            return true;
-        }
-        catch (FormatException)
-        {
-            return false;
-        }
-    }
-
-    private static string? RunCapture(string fileName, string[] args, string? stdin)
-    {
-        try
-        {
-            var info = new ProcessStartInfo
-            {
-                FileName = fileName,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                RedirectStandardInput = stdin is not null,
-                UseShellExecute = false,
-            };
-
-            foreach (string arg in args)
-            {
-                info.ArgumentList.Add(arg);
-            }
-
-            using var process = Process.Start(info);
-            if (process is null)
-            {
-                return null;
-            }
-
-            if (stdin is not null)
-            {
-                process.StandardInput.Write(stdin);
-                process.StandardInput.Close();
-            }
-
-            string output = process.StandardOutput.ReadToEnd();
-            if (!process.WaitForExit(5000))
-            {
-                try { process.Kill(); } catch { }
-                return null;
-            }
-
-            return process.ExitCode == 0 ? output : null;
-        }
-        catch
-        {
-            // Tool not installed, or no session bus. Callers treat null as "unavailable".
-            return null;
-        }
-    }
-
+    /// <summary>Sets an unreadable vault aside instead of deleting it; the bytes may still matter.</summary>
     private string Quarantine()
     {
         string target = FilePath + ".bad";

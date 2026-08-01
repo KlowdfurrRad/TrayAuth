@@ -7,7 +7,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using TrayAuth.Core;
 
-namespace TrayAuth.Linux.UI;
+namespace TrayAuth.Desktop.UI;
 
 /// <summary>
 /// The codes window. On Wayland the compositor decides where windows go - the slide-out
@@ -16,13 +16,13 @@ namespace TrayAuth.Linux.UI;
 /// </summary>
 public sealed class PanelWindow : Window
 {
-    private readonly LinuxVault _vault;
+    private readonly LocalVault _vault;
     private readonly Action _vaultChanged;
     private readonly StackPanel _list = new() { Spacing = 0 };
     private readonly TextBlock _emptyState = new()
     {
         Text = "No accounts yet.\n\nAdd one with the + button and paste in the\nsetup key the site shows next to its QR code.",
-        Foreground = LinuxTheme.TextSecondaryBrush,
+        Foreground = AppTheme.TextSecondaryBrush,
         TextAlignment = TextAlignment.Center,
         Margin = new Thickness(0, 30),
     };
@@ -33,20 +33,20 @@ public sealed class PanelWindow : Window
     /// <summary>Non-zero while one of our own dialogs is open, so Deactivated doesn't hide us.</summary>
     private int _suppressAutoHide;
 
-    public PanelWindow(LinuxVault vault, Action vaultChanged)
+    public PanelWindow(LocalVault vault, Action vaultChanged)
     {
         _vault = vault;
         _vaultChanged = vaultChanged;
 
         Title = "TrayAuth";
-        Width = LinuxTheme.PanelWidth;
+        Width = AppTheme.PanelWidth;
         SizeToContent = SizeToContent.Height;
         CanResize = false;
         SystemDecorations = SystemDecorations.None;
         Topmost = true;
         ShowInTaskbar = false;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
-        Background = LinuxTheme.BackgroundBrush;
+        Background = AppTheme.BackgroundBrush;
 
         BuildChrome();
 
@@ -84,7 +84,7 @@ public sealed class PanelWindow : Window
             Text = "Authenticator",
             FontWeight = FontWeight.Bold,
             FontSize = 15,
-            Foreground = LinuxTheme.TextBrush,
+            Foreground = AppTheme.TextBrush,
             VerticalAlignment = VerticalAlignment.Center,
         };
 
@@ -118,7 +118,7 @@ public sealed class PanelWindow : Window
             Children =
             {
                 header,
-                new Border { Height = 1, Background = LinuxTheme.BorderBrush, Margin = new Thickness(10, 0) },
+                new Border { Height = 1, Background = AppTheme.BorderBrush, Margin = new Thickness(10, 0) },
                 _emptyState,
                 _list,
                 footer,
@@ -134,7 +134,7 @@ public sealed class PanelWindow : Window
             FontSize = 16,
             Padding = new Thickness(10, 2),
             Background = Brushes.Transparent,
-            Foreground = LinuxTheme.TextSecondaryBrush,
+            Foreground = AppTheme.TextSecondaryBrush,
         };
         ToolTip.SetTip(button, tip);
         return button;
@@ -145,8 +145,8 @@ public sealed class PanelWindow : Window
         Content = text,
         FontSize = 12,
         Padding = new Thickness(10, 5),
-        Background = LinuxTheme.SurfaceBrush,
-        Foreground = LinuxTheme.TextBrush,
+        Background = AppTheme.SurfaceBrush,
+        Foreground = AppTheme.TextBrush,
     };
 
     // ---- show / hide ----------------------------------------------------------------------
@@ -188,7 +188,7 @@ public sealed class PanelWindow : Window
         {
             var row = new AccountRowControl(account, CopyFromRow)
             {
-                Width = LinuxTheme.PanelWidth - 8,
+                Width = AppTheme.PanelWidth - 8,
             };
 
             var menu = new ContextMenu();
@@ -405,7 +405,7 @@ public sealed class PanelWindow : Window
 
             try
             {
-                texts.AddRange(LinuxQrDecoder.DecodeImageFile(path));
+                texts.AddRange(ImageQrDecoder.DecodeImageFile(path));
             }
             catch
             {

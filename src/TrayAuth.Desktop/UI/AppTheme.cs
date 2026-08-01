@@ -1,9 +1,9 @@
 using Avalonia.Media;
 
-namespace TrayAuth.Linux.UI;
+namespace TrayAuth.Desktop.UI;
 
 /// <summary>The Windows Theme palette, expressed as Avalonia brushes - both apps look related.</summary>
-public static class LinuxTheme
+public static class AppTheme
 {
     public static readonly Color Background = Color.FromRgb(0x1B, 0x1B, 0x20);
     public static readonly Color Surface = Color.FromRgb(0x25, 0x25, 0x2C);

@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 
-namespace TrayAuth.Linux.UI;
+namespace TrayAuth.Desktop.UI;
 
 public enum MessageResult
 {
@@ -45,7 +45,7 @@ public static class MessageDialog
             MaxWidth = 460,
             CanResize = false,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Background = LinuxTheme.BackgroundBrush,
+            Background = AppTheme.BackgroundBrush,
             ShowInTaskbar = false,
         };
 
@@ -81,7 +81,7 @@ public static class MessageDialog
                 {
                     Text = text,
                     TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                    Foreground = LinuxTheme.TextBrush,
+                    Foreground = AppTheme.TextBrush,
                 },
                 buttonRow,
             },

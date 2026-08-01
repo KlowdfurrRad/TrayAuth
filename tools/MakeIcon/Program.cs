@@ -15,6 +15,21 @@ internal static class Program
 {
     private static readonly int[] Sizes = [16, 20, 24, 32, 40, 48, 64, 128, 256];
 
+    /// <summary>
+    /// The Apple icon-suite types we emit, each carrying a PNG. macOS picks whichever size it
+    /// needs; these cover the menu bar through to Finder's largest preview.
+    /// </summary>
+    private static readonly (string Type, int Size)[] IcnsEntries =
+    [
+        ("icp4", 16),
+        ("icp5", 32),
+        ("icp6", 64),
+        ("ic07", 128),
+        ("ic08", 256),
+        ("ic09", 512),
+        ("ic10", 1024),
+    ];
+
     private static int Main(string[] args)
     {
         string output = args.Length > 0
@@ -23,14 +38,24 @@ internal static class Program
 
         try
         {
-            string? directory = Path.GetDirectoryName(Path.GetFullPath(output));
+            string full = Path.GetFullPath(output);
+            string? directory = Path.GetDirectoryName(full);
             if (!string.IsNullOrEmpty(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            WriteIcon(output);
-            Console.WriteLine($"Wrote {Path.GetFullPath(output)} ({Sizes.Length} sizes).");
+            if (full.EndsWith(".icns", StringComparison.OrdinalIgnoreCase))
+            {
+                WriteIcns(full);
+                Console.WriteLine($"Wrote {full} ({IcnsEntries.Length} sizes).");
+            }
+            else
+            {
+                WriteIcon(full);
+                Console.WriteLine($"Wrote {full} ({Sizes.Length} sizes).");
+            }
+
             return 0;
         }
         catch (Exception ex)
@@ -83,5 +108,47 @@ internal static class Program
         {
             writer.Write(frame);
         }
+    }
+
+    /// <summary>
+    /// Writes an Apple .icns. The container is simple - a header, then one length-prefixed
+    /// chunk per size - and every modern reader accepts PNG payloads, so this needs no macOS
+    /// tooling. All integers are big-endian, unlike .ico.
+    /// </summary>
+    private static void WriteIcns(string path)
+    {
+        var chunks = new List<(string Type, byte[] Png)>();
+
+        foreach ((string type, int size) in IcnsEntries)
+        {
+            using Bitmap bitmap = AppIcon.DrawBitmap(size);
+            using var buffer = new MemoryStream();
+            bitmap.Save(buffer, ImageFormat.Png);
+            chunks.Add((type, buffer.ToArray()));
+        }
+
+        // 8-byte file header, then 8 bytes of chunk header per entry.
+        int totalLength = 8 + chunks.Sum(c => 8 + c.Png.Length);
+
+        using var stream = new FileStream(path, FileMode.Create, FileAccess.Write);
+        using var writer = new BinaryWriter(stream);
+
+        writer.Write(System.Text.Encoding.ASCII.GetBytes("icns"));
+        WriteBigEndian(writer, totalLength);
+
+        foreach ((string type, byte[] png) in chunks)
+        {
+            writer.Write(System.Text.Encoding.ASCII.GetBytes(type));
+            WriteBigEndian(writer, 8 + png.Length);
+            writer.Write(png);
+        }
+    }
+
+    private static void WriteBigEndian(BinaryWriter writer, int value)
+    {
+        writer.Write((byte)((value >> 24) & 0xFF));
+        writer.Write((byte)((value >> 16) & 0xFF));
+        writer.Write((byte)((value >> 8) & 0xFF));
+        writer.Write((byte)(value & 0xFF));
     }
 }

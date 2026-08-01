@@ -21,7 +21,7 @@ Required whenever a package reference or the pinned `RuntimeFrameworkVersion` ch
 ```
 
 Flathub's builders have no network access, so every NuGet package must be listed with its URL
-and SHA-512 up front. `RuntimeFrameworkVersion` is pinned in `TrayAuth.Linux.csproj` so that the
+and SHA-512 up front. `RuntimeFrameworkVersion` is pinned in `TrayAuth.Desktop.csproj` so that the
 closure resolved on the generating machine matches what Flathub's dotnet8 SDK extension asks
 for; without that pin the two drift apart whenever either side's SDK patch level moves, and the
 build fails with a missing package.

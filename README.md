@@ -125,12 +125,32 @@ drives, and delete it once you have put it somewhere you trust.
 If the vault is ever unreadable, TrayAuth renames it to `vault.dat.bad`, tells you, and starts
 empty — it never deletes it, in case the failure turns out to be recoverable.
 
-## Linux (alpha)
+## Linux and macOS (alpha)
 
-A native Linux sibling lives in `src/TrayAuth.Linux` — Avalonia UI, StatusNotifier tray icon with
-live codes in its menu, the same vault document sealed with AES-256-GCM (key in the GNOME keyring
-via `secret-tool`, with a 0600 key-file fallback), and the same export files, so accounts move
-between the two apps by export → import.
+`src/TrayAuth.Desktop` is one Avalonia app covering both: a tray / menu-bar icon whose menu carries
+live codes, the same vault document sealed with AES-256-GCM, and the same export files — so accounts
+move between all three platforms by export → import, and the codes match digit-for-digit.
+
+The vault key lives in whatever each OS offers: the **macOS Keychain** via `security`, the **GNOME
+keyring** via `secret-tool` on Linux, with a `0600` key-file fallback if neither answers. All logic
+is shared with Windows through `TrayAuth.Core` and its 103 portable tests.
+
+### macOS
+
+Download `TrayAuth-macOS-*-arm64.tar.gz` (Apple Silicon) or `-x64` (Intel):
+
+```bash
+tar xzf TrayAuth-macOS-*.tar.gz && cd TrayAuth-macOS-*/
+sh install.sh                                                  # into ~/Applications, clears quarantine
+~/Applications/TrayAuth.app/Contents/MacOS/trayauth --selftest # must print SELFTEST OK
+open ~/Applications/TrayAuth.app
+```
+
+It's a menu-bar app (`LSUIElement`) — no Dock icon, by design. Unsigned, so `install.sh` clears the
+download quarantine flag; without that Gatekeeper blocks the first launch. Details:
+[`packaging/macos/README-MACOS.md`](packaging/macos/README-MACOS.md).
+
+### Linux
 
 Grab `TrayAuth-Linux-*.tar.gz` from Releases, then:
 
@@ -142,9 +162,11 @@ bash install.sh                     # per-user, no sudo (bash, not ./ - Windows-
 ```
 
 Recommended: `sudo apt install wl-clipboard libsecret-tools` (tray-menu copying on Wayland, and
-keyring key storage). Honest limitations: no slide animation or panel positioning (Wayland forbids
-apps placing windows), no global hotkey yet, QR import from image files only. `build-linux.ps1`
-cross-compiles the tarball from Windows.
+keyring key storage).
+
+Honest limitations on both: no slide animation or panel positioning (Wayland forbids apps placing
+their own windows), no global hotkey yet, QR import from image files only. `build-linux.ps1` and
+`build-macos.ps1` cross-compile the artifacts from Windows.
 
 ### Flatpak
 
@@ -193,14 +215,16 @@ build, package, install — in one double-click.
 ### Layout
 
 ```
-src/TrayAuth/
-  Core/       Base32, Totp, Account, Vault, ExportService, ClipboardService, StartupRegistration,
-              GoogleAuthMigration (transfer-QR protobuf), QrDecoder (ZXing), QrImport
-  Interop/    TaskbarInfo (taskbar edge), HotKey, native declarations
-  UI/         TrayContext, PanelForm (the slide), AccountRow, AddAccountDialog, Theme, AppIcon
-tests/        126 tests
-tools/MakeIcon/   generates assets/icon.ico
-packaging/    TrayAuth.iss - the Inno Setup installer
+src/TrayAuth.Core/      shared by every platform: Base32, Totp, Account, OtpAuthUri,
+                        GoogleAuthMigration (transfer-QR protobuf), QrImport, ExportService,
+                        VaultDocument, FileProtection
+src/TrayAuth/           Windows (WinForms): DPAPI Vault, QrDecoder, ClipboardService,
+                        DesktopContextMenu, StartupRegistration, Interop/, UI/
+src/TrayAuth.Desktop/   Linux + macOS (Avalonia): LocalVault (AES-GCM), VaultKeyStore
+                        (Keychain / Secret Service / key file), ClipboardHelper, Autostart, UI/
+tests/                  126 tests - 103 portable, 23 Windows-only
+tools/MakeIcon/         generates assets/icon.ico and assets/trayauth.icns
+packaging/              TrayAuth.iss (Inno), linux/, macos/, flatpak/
 ```
 
 The code generator is plain `System.Security.Cryptography` against RFC 4226/6238, and the tests

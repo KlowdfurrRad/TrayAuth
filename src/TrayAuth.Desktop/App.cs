@@ -6,9 +6,9 @@ using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using TrayAuth.Core;
-using TrayAuth.Linux.UI;
+using TrayAuth.Desktop.UI;
 
-namespace TrayAuth.Linux;
+namespace TrayAuth.Desktop;
 
 /// <summary>
 /// The application: a StatusNotifier tray icon whose menu carries live codes, plus the panel.
@@ -16,7 +16,7 @@ namespace TrayAuth.Linux;
 /// </summary>
 public sealed class App : Application
 {
-    private readonly LinuxVault _vault = new();
+    private readonly LocalVault _vault = new();
     private PanelWindow? _panel;
     private TrayIcon? _tray;
     private NativeMenu? _menu;

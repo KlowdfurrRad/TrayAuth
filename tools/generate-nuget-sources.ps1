@@ -12,7 +12,7 @@
       2. hash every .nupkg and emit flatpak "file" sources pointing at nuget.org.
 
     Determinism note: the runtime-pack version is pinned via RuntimeFrameworkVersion in
-    TrayAuth.Linux.csproj, so the closure resolved here matches what Flathub's dotnet8 SDK
+    TrayAuth.Desktop.csproj, so the closure resolved here matches what Flathub's dotnet8 SDK
     extension will request, regardless of SDK patch drift between the two machines.
 #>
 [CmdletBinding()]
@@ -28,7 +28,7 @@ if ([string]::IsNullOrWhiteSpace($Output)) {
     $Output = Join-Path $PSScriptRoot '..\packaging\flatpak\nuget-sources.json'
 }
 
-$project = Join-Path $PSScriptRoot '..\src\TrayAuth.Linux\TrayAuth.Linux.csproj'
+$project = Join-Path $PSScriptRoot '..\src\TrayAuth.Desktop\TrayAuth.Desktop.csproj'
 $packages = Join-Path $env:LOCALAPPDATA 'TrayAuth-build\nuget-closure'
 
 Write-Host 'Resolving the package closure (clean restore, linux-x64)...'

@@ -18,7 +18,7 @@ python3 "$GENERATOR" \
     --freedesktop 24.08 \
     --runtime linux-x64 \
     "$HERE/nuget-sources.json" \
-    "$HERE/../../src/TrayAuth.Linux/TrayAuth.Linux.csproj"
+    "$HERE/../../src/TrayAuth.Desktop/TrayAuth.Desktop.csproj"
 
 echo
 echo "Wrote $HERE/nuget-sources.json"
