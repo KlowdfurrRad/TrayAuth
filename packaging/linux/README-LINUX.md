@@ -9,13 +9,16 @@ export files, same RFC-verified code generation.
 ```bash
 tar xzf TrayAuth-Linux-*.tar.gz
 cd TrayAuth-Linux-*/
-./install.sh
+bash install.sh
 ```
+
+(`bash install.sh`, not `./install.sh` - the tarball is built on Windows, which cannot record
+the executable bit. The script restores correct permissions on everything it installs.)
 
 No sudo - everything goes under `~/.local`. Then, **before anything else**:
 
 ```bash
-trayauth --selftest
+~/.local/bin/trayauth --selftest
 ```
 
 This proves the vault crypto, file permissions, RFC test vectors and export/import on your
@@ -25,8 +28,11 @@ full output.
 Then start it:
 
 ```bash
-trayauth &
+~/.local/bin/trayauth &
 ```
+
+(Plain `trayauth` also works once `~/.local/bin` is on your PATH - Ubuntu adds it automatically
+at next login if the directory was just created.)
 
 Recommended packages:
 
@@ -64,7 +70,7 @@ pick `TrayAuth-export.json`. Codes will match the Windows app digit-for-digit.
 ## Uninstall
 
 ```bash
-./uninstall.sh
+bash uninstall.sh
 ```
 
 Your encrypted accounts in `~/.config/trayauth` are kept unless you say otherwise.

@@ -136,9 +136,9 @@ Grab `TrayAuth-Linux-*.tar.gz` from Releases, then:
 
 ```bash
 tar xzf TrayAuth-Linux-*.tar.gz && cd TrayAuth-Linux-*/
-./install.sh          # per-user, no sudo
-trayauth --selftest   # must print SELFTEST OK
-trayauth &
+bash install.sh                     # per-user, no sudo (bash, not ./ - Windows-built tar has no exec bits)
+~/.local/bin/trayauth --selftest    # must print SELFTEST OK
+~/.local/bin/trayauth &
 ```
 
 Recommended: `sudo apt install wl-clipboard libsecret-tools` (tray-menu copying on Wayland, and

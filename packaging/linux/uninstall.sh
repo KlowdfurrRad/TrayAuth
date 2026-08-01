@@ -1,13 +1,14 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Removes TrayAuth. Your accounts in ~/.config/trayauth are kept unless you delete them here.
-set -euo pipefail
+# POSIX sh, runnable as `sh uninstall.sh` - see install.sh for why.
+set -eu
 
 echo
 echo "Uninstalling TrayAuth"
 echo "---------------------"
 
 pkill -x trayauth 2>/dev/null || true
-sleep 0.5
+sleep 1
 
 rm -f "$HOME/.local/bin/trayauth"
 rm -rf "$HOME/.local/share/trayauth"
@@ -20,7 +21,8 @@ echo
 
 if [ -d "$HOME/.config/trayauth" ]; then
     echo "Your accounts are still at ~/.config/trayauth (encrypted)."
-    read -r -p "Delete them too? They cannot be recovered afterwards. [y/N] " answer
+    printf "Delete them too? They cannot be recovered afterwards. [y/N] "
+    read -r answer || answer=""
     case "$answer" in
         [Yy]*)
             rm -rf "$HOME/.config/trayauth"

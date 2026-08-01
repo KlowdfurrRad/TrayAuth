@@ -83,6 +83,6 @@ Write-Host "  $tarball"
 Write-Host "  SHA256  $hash"
 Write-Host ''
 Write-Host 'On the Ubuntu machine:'
-Write-Host "  tar xzf $stageName-linux-x64.tar.gz && cd $stageName && ./install.sh"
-Write-Host '  trayauth --selftest'
+Write-Host "  tar xzf $stageName-linux-x64.tar.gz && cd $stageName && bash install.sh"
+Write-Host '  ~/.local/bin/trayauth --selftest'
 Write-Host ''
