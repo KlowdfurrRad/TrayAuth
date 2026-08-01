@@ -146,6 +146,32 @@ keyring key storage). Honest limitations: no slide animation or panel positionin
 apps placing windows), no global hotkey yet, QR import from image files only. `build-linux.ps1`
 cross-compiles the tarball from Windows.
 
+### Flatpak
+
+A sandboxed Flatpak build lives in [`packaging/flatpak/`](packaging/flatpak/) (Flathub submission
+planned — once it's live, this becomes `flatpak install flathub io.github.KlowdfurrRad.TrayAuth`).
+To build it yourself on Ubuntu:
+
+```bash
+# one-time setup
+sudo apt install -y flatpak flatpak-builder git python3 curl
+flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak install --user -y flathub org.freedesktop.Platform//24.08 \
+    org.freedesktop.Sdk//24.08 org.freedesktop.Sdk.Extension.dotnet8//24.08
+
+# build, install, run
+cd packaging/flatpak
+bash generate-sources.sh    # pins every NuGet package - Flathub builds run offline
+flatpak-builder --user --install --force-clean build io.github.KlowdfurrRad.TrayAuth.yml
+flatpak run io.github.KlowdfurrRad.TrayAuth
+```
+
+The sandbox bundles its own `wl-copy` and `secret-tool` (host binaries are invisible inside), asks
+for no filesystem access (file dialogs go through the portal), and keeps its vault in the app's own
+sandboxed config — move accounts between the flatpak and the tarball install via export → import.
+"Start on login" is hidden inside the flatpak until the Background portal is wired up. Details and
+the verification checklist: [`packaging/flatpak/README-FLATPAK.md`](packaging/flatpak/README-FLATPAK.md).
+
 ## Building from source
 
 Needs the [.NET 8 SDK](https://dotnet.microsoft.com/download) (`winget install Microsoft.DotNet.SDK.8`),
