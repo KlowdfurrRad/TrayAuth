@@ -26,6 +26,22 @@ closure resolved on the generating machine matches what Flathub's dotnet8 SDK ex
 for; without that pin the two drift apart whenever either side's SDK patch level moves, and the
 build fails with a missing package.
 
+## The PR body is not optional
+
+Flathub's `submission-checker` bot runs hourly and **auto-closes any submission PR whose body
+does not contain the completed template checklist**. Replacing the template with your own
+description - however thorough - closes the PR with "Checklist(s) not completed or missing".
+
+The checklist lives at `.github/pull_request_template.md` on the flathub/flathub master branch.
+Read it fresh at submission time rather than trusting a copy here; it changes. As of the first
+submission it required five ticks, and one of them is the reason a local build cannot be
+skipped:
+
+> Please attach a video showcasing the application on Linux using the Flatpak.
+
+So the app must be built and run as a Flatpak, and recorded, before the PR can pass the bot -
+the Flathub build bot is not a substitute for that.
+
 ## After the PR is opened
 
 1. The Flathub bot builds the manifest and comments with a test install command - that is the
