@@ -43,9 +43,11 @@
   </branding>
 
   <screenshots>
+    <!-- Flathub: window only, no wallpaper, real content rather than an empty state, and a
+         single-sentence caption with no trailing punctuation. -->
     <screenshot type="default">
       <image>https://raw.githubusercontent.com/KlowdfurrRad/TrayAuth/main/packaging/flatpak/screenshots/panel.png</image>
-      <caption>The codes panel with live countdown rings</caption>
+      <caption xml:lang="en">Live two-factor codes with countdown rings</caption>
     </screenshot>
   </screenshots>
 
