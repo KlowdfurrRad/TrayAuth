@@ -16,6 +16,10 @@
     <FileVersion>0.1.0.0</FileVersion>
     <!-- The clean-clone tray-icon fallback writes pixels through a raw framebuffer pointer. -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Pinned so the offline Flatpak build is deterministic: without this, the runtime-pack
+         version follows whichever SDK patch does the build, and Flathub's SDK extension and
+         the machine that generated nuget-sources.json would drift apart. -->
+    <RuntimeFrameworkVersion>8.0.29</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
