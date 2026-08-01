@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=TrayAuth
+GenericName=Authenticator
+Comment=Two-factor authentication codes in your system tray
+Exec=__EXEC__
+Icon=trayauth
+Terminal=false
+Categories=Utility;Security;
+Keywords=totp;2fa;otp;authenticator;two-factor;
+StartupNotify=false

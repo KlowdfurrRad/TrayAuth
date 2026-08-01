@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The shared heart of TrayAuth: TOTP generation, account model, vault document, exports,
+       imports, Google Authenticator migration. No UI, no Windows dependencies - this project
+       must build and behave identically for the Windows tray app and the Linux one. -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>TrayAuth.Core</RootNamespace>
+    <AssemblyName>TrayAuth.Core</AssemblyName>
+    <Version>1.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="QRCoder" Version="1.6.0" />
+    <!-- Windows ACL hardening in FileProtection; both are inert no-ops at runtime elsewhere. -->
+    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
+    <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
+  </ItemGroup>
+
+</Project>

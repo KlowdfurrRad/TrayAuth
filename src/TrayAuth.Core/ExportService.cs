@@ -195,7 +195,7 @@ public static class ExportService
 
         string pngPath = Path.Combine(directory, baseName + ".png");
         File.WriteAllBytes(pngPath, RenderQrPng(OtpAuthUri.Build(account)));
-        Vault.HardenFile(pngPath);
+        FileProtection.HardenFile(pngPath);
         yield return pngPath;
     }
 
@@ -212,7 +212,7 @@ public static class ExportService
     private static void WriteTextFile(string path, string content)
     {
         File.WriteAllText(path, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-        Vault.HardenFile(path);
+        FileProtection.HardenFile(path);
     }
 
     private static string BuildReadMe(int count, DateTimeOffset stamp) =>

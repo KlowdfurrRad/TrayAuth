@@ -1,8 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- Portable tests: everything here must run on Windows and Linux alike, because it tests
+       the shared core both apps stand on. Windows-only behaviour (DPAPI vault, registry menu,
+       System.Drawing QR decoding) is tested in TrayAuth.Tests instead. -->
+
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <UseWindowsForms>true</UseWindowsForms>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
@@ -16,9 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\TrayAuth\TrayAuth.csproj" />
-    <!-- For MigrationTestData - the payload builders are shared with the portable tests. -->
-    <ProjectReference Include="..\TrayAuth.Core.Tests\TrayAuth.Core.Tests.csproj" />
+    <ProjectReference Include="..\..\src\TrayAuth.Core\TrayAuth.Core.csproj" />
   </ItemGroup>
 
 </Project>

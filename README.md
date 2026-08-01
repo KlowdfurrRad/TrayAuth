@@ -125,6 +125,27 @@ drives, and delete it once you have put it somewhere you trust.
 If the vault is ever unreadable, TrayAuth renames it to `vault.dat.bad`, tells you, and starts
 empty — it never deletes it, in case the failure turns out to be recoverable.
 
+## Linux (alpha)
+
+A native Linux sibling lives in `src/TrayAuth.Linux` — Avalonia UI, StatusNotifier tray icon with
+live codes in its menu, the same vault document sealed with AES-256-GCM (key in the GNOME keyring
+via `secret-tool`, with a 0600 key-file fallback), and the same export files, so accounts move
+between the two apps by export → import.
+
+Grab `TrayAuth-Linux-*.tar.gz` from Releases, then:
+
+```bash
+tar xzf TrayAuth-Linux-*.tar.gz && cd TrayAuth-Linux-*/
+./install.sh          # per-user, no sudo
+trayauth --selftest   # must print SELFTEST OK
+trayauth &
+```
+
+Recommended: `sudo apt install wl-clipboard libsecret-tools` (tray-menu copying on Wayland, and
+keyring key storage). Honest limitations: no slide animation or panel positioning (Wayland forbids
+apps placing windows), no global hotkey yet, QR import from image files only. `build-linux.ps1`
+cross-compiles the tarball from Windows.
+
 ## Building from source
 
 Needs the [.NET 8 SDK](https://dotnet.microsoft.com/download) (`winget install Microsoft.DotNet.SDK.8`),

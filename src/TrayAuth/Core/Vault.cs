@@ -1,34 +1,9 @@
-using System.Security.AccessControl;
 using System.Security.Cryptography;
-using System.Security.Principal;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace TrayAuth.Core;
-
-/// <summary>The JSON document that gets sealed into vault.dat.</summary>
-internal sealed class VaultDocument
-{
-    [JsonPropertyName("version")]
-    public int Version { get; set; } = 1;
-
-    [JsonPropertyName("accounts")]
-    public List<Account> Accounts { get; set; } = [];
-}
-
-public enum VaultLoadStatus
-{
-    /// <summary>No vault file yet — first run.</summary>
-    New,
-
-    Loaded,
-
-    /// <summary>The file existed but could not be unsealed or parsed; it was set aside.</summary>
-    Recovered,
-}
-
-public sealed record VaultLoadResult(VaultLoadStatus Status, string? QuarantinedPath, string? Error);
 
 /// <summary>
 /// Account storage, sealed at rest with Windows DPAPI under the current user account.
@@ -111,7 +86,7 @@ public sealed class Vault
     {
         string directory = Path.GetDirectoryName(FilePath)!;
         Directory.CreateDirectory(directory);
-        HardenDirectory(directory);
+        FileProtection.HardenDirectory(directory);
 
         var document = new VaultDocument { Version = 1, Accounts = _accounts };
         byte[] json = JsonSerializer.SerializeToUtf8Bytes(document, SerializerOptions);
@@ -234,81 +209,4 @@ public sealed class Vault
         }
     }
 
-    /// <summary>
-    /// Breaks ACL inheritance on the vault directory and grants only the current user, so other
-    /// accounts on the machine cannot even read the sealed bytes. Best effort by design: a failure
-    /// here should not stop the app from running.
-    /// </summary>
-    public static void HardenDirectory(string directory)
-    {
-        try
-        {
-            var info = new DirectoryInfo(directory);
-            DirectorySecurity security = info.GetAccessControl();
-
-            security.SetAccessRuleProtection(isProtected: true, preserveInheritance: false);
-
-            foreach (FileSystemAccessRule rule in security
-                .GetAccessRules(includeExplicit: true, includeInherited: false, typeof(SecurityIdentifier))
-                .Cast<FileSystemAccessRule>())
-            {
-                security.RemoveAccessRule(rule);
-            }
-
-            SecurityIdentifier? user = WindowsIdentity.GetCurrent().User;
-            if (user is null)
-            {
-                return;
-            }
-
-            security.AddAccessRule(new FileSystemAccessRule(
-                user,
-                FileSystemRights.FullControl,
-                InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
-                PropagationFlags.None,
-                AccessControlType.Allow));
-
-            info.SetAccessControl(security);
-        }
-        catch
-        {
-            // Non-fatal: DPAPI is doing the actual protecting here.
-        }
-    }
-
-    /// <summary>Grants only the current user on a single file. Used for exported plaintext files.</summary>
-    public static void HardenFile(string path)
-    {
-        try
-        {
-            var info = new FileInfo(path);
-            FileSecurity security = info.GetAccessControl();
-
-            security.SetAccessRuleProtection(isProtected: true, preserveInheritance: false);
-
-            foreach (FileSystemAccessRule rule in security
-                .GetAccessRules(includeExplicit: true, includeInherited: false, typeof(SecurityIdentifier))
-                .Cast<FileSystemAccessRule>())
-            {
-                security.RemoveAccessRule(rule);
-            }
-
-            SecurityIdentifier? user = WindowsIdentity.GetCurrent().User;
-            if (user is null)
-            {
-                return;
-            }
-
-            security.AddAccessRule(new FileSystemAccessRule(
-                user,
-                FileSystemRights.FullControl,
-                AccessControlType.Allow));
-
-            info.SetAccessControl(security);
-        }
-        catch
-        {
-            // Non-fatal.
-        }
-    }
 }

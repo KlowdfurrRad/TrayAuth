@@ -4,9 +4,10 @@ namespace TrayAuth.Tests;
 
 /// <summary>
 /// Builds otpauth-migration payloads byte by byte, so the tests encode the protobuf with code
-/// that shares nothing with the reader under test.
+/// that shares nothing with the reader under test. Public because the Windows-only test project
+/// reuses it for the bitmap QR round-trips.
 /// </summary>
-internal static class MigrationTestData
+public static class MigrationTestData
 {
     /// <summary>Decodes from base32 JBSWY3DPEHPK3PXP - "Hello!" followed by DE AD BE EF.</summary>
     public static readonly byte[] KnownSecret = [0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x21, 0xDE, 0xAD, 0xBE, 0xEF];

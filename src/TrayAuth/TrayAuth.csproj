@@ -30,7 +30,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="QRCoder" Version="1.6.0" />
+    <ProjectReference Include="..\TrayAuth.Core\TrayAuth.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
     <!-- QR *decoding* (QRCoder only encodes) - used by the Google Authenticator import. -->
     <PackageReference Include="ZXing.Net" Version="0.16.10" />
