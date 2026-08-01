@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.KlowdfurrRad.TrayAuth</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+
+  <name>TrayAuth</name>
+  <summary>Two-factor codes in your system tray</summary>
+
+  <description>
+    <p>
+      TrayAuth keeps your two-factor authentication codes one click away. The tray menu lists
+      every account with its live code - click one and it is on your clipboard, which clears
+      itself twenty seconds later. A panel shows the same codes with countdown rings.
+    </p>
+    <p>
+      Accounts are added by typing the setup key a site shows next to its QR image, with a live
+      preview of the resulting code before you save. Google Authenticator transfers import
+      directly from QR screenshots, including multi-QR batches. Everything can be exported to
+      plain JSON plus scannable QR images, and the same files restore on the Windows build.
+    </p>
+    <p>
+      The vault is encrypted with AES-256-GCM, with the key stored in your keyring. TrayAuth
+      makes no network connections of any kind: no account, no sync, no telemetry.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.github.KlowdfurrRad.TrayAuth.desktop</launchable>
+
+  <url type="homepage">https://github.com/KlowdfurrRad/TrayAuth</url>
+  <url type="bugtracker">https://github.com/KlowdfurrRad/TrayAuth/issues</url>
+  <url type="vcs-browser">https://github.com/KlowdfurrRad/TrayAuth</url>
+
+  <developer id="io.github.klowdfurrrad">
+    <name>Raadhes Chandaluru</name>
+  </developer>
+
+  <content_rating type="oars-1.1"/>
+
+  <branding>
+    <color type="primary" scheme_preference="light">#3dd68c</color>
+    <color type="primary" scheme_preference="dark">#1b1b20</color>
+  </branding>
+
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/KlowdfurrRad/TrayAuth/main/packaging/flatpak/screenshots/panel.png</image>
+      <caption>The codes panel with live countdown rings</caption>
+    </screenshot>
+  </screenshots>
+
+  <categories>
+    <category>Utility</category>
+    <category>Security</category>
+  </categories>
+
+  <keywords>
+    <keyword>totp</keyword>
+    <keyword>2fa</keyword>
+    <keyword>otp</keyword>
+    <keyword>authenticator</keyword>
+    <keyword>two-factor</keyword>
+  </keywords>
+
+  <releases>
+    <release version="0.1.0" date="2026-07-28" type="development">
+      <description>
+        <p>First Linux release: tray menu with live codes, codes panel, Google Authenticator
+        QR import, encrypted vault with keyring-backed key, export and import compatible with
+        the Windows build.</p>
+      </description>
+    </release>
+  </releases>
+</component>

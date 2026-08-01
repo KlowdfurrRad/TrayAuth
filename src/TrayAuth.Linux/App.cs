@@ -151,8 +151,15 @@ public sealed class App : Application
         _menu.Add(importQr);
         _menu.Add(export);
         _menu.Add(new NativeMenuItemSeparator());
-        _menu.Add(autostart);
-        _menu.Add(new NativeMenuItemSeparator());
+
+        // Inside Flatpak the sandbox blocks writing ~/.config/autostart (the proper route is
+        // the Background portal - future work), so the toggle would silently lie. Hide it.
+        if (!File.Exists("/.flatpak-info"))
+        {
+            _menu.Add(autostart);
+            _menu.Add(new NativeMenuItemSeparator());
+        }
+
         _menu.Add(quit);
 
         _tray = new TrayIcon
