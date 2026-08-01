@@ -44,12 +44,22 @@ asked.
 | | |
 |---|---|
 | Open the panel | Click the tray icon, or press **Ctrl+Alt+A** |
-| Copy a code | Click it. The clipboard clears itself 20 seconds later |
+| Copy a code | Click it in the panel — or **right-click the tray icon** and click it there, no panel needed. Either way the clipboard clears itself 20 seconds later |
 | Add an account | The **+** button, or **Add account** at the bottom |
 | Edit / export / delete one | Right-click its row |
 | Export everything | Tray menu → **Export all accounts…** |
-| Restore a backup | Tray menu → **Import…** |
+| Restore a backup | Tray menu → **Import** → **From export file…** |
+| Move in from Google Authenticator | Phone: *Settings → Transfer accounts → Export accounts*, screenshot the QR, get it to this PC, then tray menu → **Import** → **From QR image…** — or show the QR on this screen and use **Scan screen for QR code** |
 | Close the panel | Click anywhere else, or press **Esc** |
+
+The right-click menu shows every account with its live code and seconds remaining, so day-to-day
+copying never needs the panel at all.
+
+QR import understands both kinds of QR: a site's ordinary `otpauth://` enrollment QR, and Google
+Authenticator's transfer QR (`otpauth-migration://`), which can carry many accounts at once. If a
+transfer spans several QRs, scan them together or one after another — TrayAuth tells you when part
+of the set is still missing. Counter-based (HOTP) entries are skipped and reported by name-count,
+never silently.
 
 The clipboard auto-clear only removes the code if the clipboard still contains it, so anything you
 copy in the meantime is left alone.
@@ -130,10 +140,11 @@ build, package, install — in one double-click.
 
 ```
 src/TrayAuth/
-  Core/       Base32, Totp, Account, Vault, ExportService, ClipboardService, StartupRegistration
+  Core/       Base32, Totp, Account, Vault, ExportService, ClipboardService, StartupRegistration,
+              GoogleAuthMigration (transfer-QR protobuf), QrDecoder (ZXing), QrImport
   Interop/    TaskbarInfo (taskbar edge), HotKey, native declarations
   UI/         TrayContext, PanelForm (the slide), AccountRow, AddAccountDialog, Theme, AppIcon
-tests/        89 tests
+tests/        116 tests
 tools/MakeIcon/   generates assets/icon.ico
 packaging/    TrayAuth.iss - the Inno Setup installer
 ```
@@ -144,7 +155,10 @@ with every other authenticator in existence.
 
 ## What it deliberately doesn't do
 
-- **Scan QR codes to add accounts.** You type the setup key. QR is export-only.
+- **Use a webcam.** QR import reads image files and your screen, not a camera — screenshot the
+  QR instead.
+- **Import HOTP.** Counter-based entries have no clock to agree on and TrayAuth doesn't track
+  counters; they are skipped with a note rather than imported wrong.
 - **Ask for a master password.** DPAPI unlocks with your Windows login, so the panel opens
   instantly. The trade-off: anything already running as you can read the vault.
 - **Sync anything anywhere.** No account, no server, no telemetry. Backups are files you move.

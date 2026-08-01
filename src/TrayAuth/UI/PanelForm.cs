@@ -401,63 +401,7 @@ public sealed class PanelForm : Form
             }
 
             IReadOnlyList<Account> found = ExportService.Import(dialog.FileName);
-
-            DialogResult confirm = ShowMessage(
-                $"Found {found.Count} account(s) in that file.\r\n\r\nImport them now?",
-                "Import accounts",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question);
-
-            if (confirm != DialogResult.Yes)
-            {
-                return;
-            }
-
-            int added = 0;
-            int replaced = 0;
-            int skipped = 0;
-
-            foreach (Account account in found)
-            {
-                Account? existing = _vault.FindMatch(account);
-
-                if (existing is null)
-                {
-                    _vault.Add(account);
-                    added++;
-                    continue;
-                }
-
-                DialogResult choice = ShowMessage(
-                    $"\"{account.FullName}\" is already in your vault.\r\n\r\nReplace it with the imported copy?\r\n\r\nYes — replace    No — keep what I have    Cancel — stop importing",
-                    "Import conflict",
-                    MessageBoxButtons.YesNoCancel,
-                    MessageBoxIcon.Question);
-
-                if (choice == DialogResult.Cancel)
-                {
-                    break;
-                }
-
-                if (choice == DialogResult.Yes)
-                {
-                    account.Id = existing.Id;
-                    _vault.Update(account);
-                    replaced++;
-                }
-                else
-                {
-                    skipped++;
-                }
-            }
-
-            SaveAndReload();
-
-            ShowMessage(
-                $"Import finished.\r\n\r\nAdded: {added}\r\nReplaced: {replaced}\r\nSkipped: {skipped}",
-                "Import accounts",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+            MergeImportedAccounts(found, notes: null);
         }
         catch (Exception ex)
         {
@@ -467,6 +411,160 @@ public sealed class PanelForm : Form
         {
             _suppressAutoHide--;
         }
+    }
+
+    /// <summary>
+    /// Import from image files containing QR codes - Google Authenticator transfer QRs
+    /// (screenshotted on the phone and copied over) or a site's plain otpauth enrollment QR.
+    /// </summary>
+    public void ImportFromQrImages()
+    {
+        _suppressAutoHide++;
+
+        try
+        {
+            using var dialog = new OpenFileDialog
+            {
+                Title = "Import from QR image",
+                Filter = "Images (*.png;*.jpg;*.jpeg;*.bmp;*.gif)|*.png;*.jpg;*.jpeg;*.bmp;*.gif|All files (*.*)|*.*",
+                Multiselect = true,
+            };
+
+            if (dialog.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+
+            var texts = new List<string>();
+            var unreadable = new List<string>();
+
+            foreach (string file in dialog.FileNames)
+            {
+                try
+                {
+                    texts.AddRange(QrDecoder.DecodeImageFile(file));
+                }
+                catch
+                {
+                    unreadable.Add(Path.GetFileName(file));
+                }
+            }
+
+            if (unreadable.Count > 0)
+            {
+                ShowMessage(
+                    "These files could not be opened as images:\r\n\r\n" + string.Join("\r\n", unreadable),
+                    "Import from QR",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+
+            HandleQrTexts(texts);
+        }
+        catch (Exception ex)
+        {
+            ShowMessage($"The QR import failed.\r\n\r\n{ex.Message}", "Import from QR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+            _suppressAutoHide--;
+        }
+    }
+
+    /// <summary>Shared tail of every QR path: decode payloads to accounts, then run the merge flow.</summary>
+    public void HandleQrTexts(IReadOnlyList<string> texts)
+    {
+        if (texts.Count == 0)
+        {
+            ShowMessage(
+                "No QR code could be read.\r\n\r\nMake sure the whole QR is visible and reasonably sharp, then try again.",
+                "Import from QR",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+            return;
+        }
+
+        QrImportOutcome outcome = QrImport.CollectAccounts(texts);
+
+        if (outcome.Accounts.Count == 0)
+        {
+            string detail = outcome.Notes.Count > 0
+                ? string.Join("\r\n\r\n", outcome.Notes)
+                : "The QR code(s) do not contain authenticator accounts.";
+
+            ShowMessage(detail, "Import from QR", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        MergeImportedAccounts(outcome.Accounts, outcome.Notes);
+    }
+
+    /// <summary>
+    /// Confirms, resolves conflicts against the vault one by one, saves, and reports - the same
+    /// flow whether the accounts came from an export file or a QR.
+    /// </summary>
+    private void MergeImportedAccounts(IReadOnlyList<Account> found, IReadOnlyList<string>? notes)
+    {
+        string extra = notes is { Count: > 0 }
+            ? "\r\n\r\n" + string.Join("\r\n", notes)
+            : string.Empty;
+
+        DialogResult confirm = ShowMessage(
+            $"Found {found.Count} account(s).{extra}\r\n\r\nImport them now?",
+            "Import accounts",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question);
+
+        if (confirm != DialogResult.Yes)
+        {
+            return;
+        }
+
+        int added = 0;
+        int replaced = 0;
+        int skipped = 0;
+
+        foreach (Account account in found)
+        {
+            Account? existing = _vault.FindMatch(account);
+
+            if (existing is null)
+            {
+                _vault.Add(account);
+                added++;
+                continue;
+            }
+
+            DialogResult choice = ShowMessage(
+                $"\"{account.FullName}\" is already in your vault.\r\n\r\nReplace it with the imported copy?\r\n\r\nYes — replace    No — keep what I have    Cancel — stop importing",
+                "Import conflict",
+                MessageBoxButtons.YesNoCancel,
+                MessageBoxIcon.Question);
+
+            if (choice == DialogResult.Cancel)
+            {
+                break;
+            }
+
+            if (choice == DialogResult.Yes)
+            {
+                account.Id = existing.Id;
+                _vault.Update(account);
+                replaced++;
+            }
+            else
+            {
+                skipped++;
+            }
+        }
+
+        SaveAndReload();
+
+        ShowMessage(
+            $"Import finished.\r\n\r\nAdded: {added}\r\nReplaced: {replaced}\r\nSkipped: {skipped}",
+            "Import accounts",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Information);
     }
 
     private void SaveAndReload()
@@ -605,6 +703,19 @@ public sealed class PanelForm : Form
 
         IsShown = false;
         StartSlide(inwards: false);
+    }
+
+    /// <summary>
+    /// Hides with no slide and no fade - used before capturing the screen for QR scanning, where
+    /// an always-on-top panel would end up in its own photograph.
+    /// </summary>
+    public void HidePanelImmediate()
+    {
+        _slideTimer.Stop();
+        _tickTimer.Stop();
+        IsShown = false;
+        Opacity = 0d;
+        Hide();
     }
 
     private void StartSlide(bool inwards)

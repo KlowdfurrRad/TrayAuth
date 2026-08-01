@@ -7,7 +7,7 @@
 ; Built by build.ps1 - it passes the version and source path in via /D switches.
 
 #ifndef AppVersion
-  #define AppVersion "1.0.0"
+  #define AppVersion "1.1.0"
 #endif
 
 #ifndef SourceDir

@@ -416,10 +416,17 @@ public static class ExportService
         foreach (string line in text.Split('\n', StringSplitOptions.RemoveEmptyEntries))
         {
             string trimmed = line.Trim();
+
             if (trimmed.StartsWith("otpauth://", StringComparison.OrdinalIgnoreCase)
                 && OtpAuthUri.TryParse(trimmed, out Account account, out _))
             {
                 accounts.Add(account);
+            }
+            else if (GoogleAuthMigration.IsMigrationUri(trimmed)
+                && GoogleAuthMigration.TryParse(trimmed, out MigrationResult migration, out _))
+            {
+                // A pasted Google Authenticator transfer URI restores every account it carries.
+                accounts.AddRange(migration.Accounts);
             }
         }
 

@@ -18,6 +18,12 @@ public sealed class TrayContext : ApplicationContext
 
     private ToolStripMenuItem _startupItem = null!;
 
+    /// <summary>Accounts shown at the top of the tray menu; more than this and the panel is the tool.</summary>
+    private const int MaxMenuCodes = 15;
+
+    private readonly List<ToolStripItem> _codeItems = [];
+    private readonly System.Windows.Forms.Timer _menuRefresh = new() { Interval = 1000 };
+
     public TrayContext(uint showPanelMessage)
     {
         _panel = new PanelForm(_vault, _clipboard)
@@ -51,7 +57,13 @@ public sealed class TrayContext : ApplicationContext
         _menu.Items.Add("Add account...", null, (_, _) => ShowThenRun(_panel.AddAccount));
         _menu.Items.Add(new ToolStripSeparator());
         _menu.Items.Add("Export all accounts...", null, (_, _) => ShowThenRun(_panel.ExportAll));
-        _menu.Items.Add("Import...", null, (_, _) => ShowThenRun(_panel.ImportAccounts));
+
+        var import = new ToolStripMenuItem("Import");
+        import.DropDownItems.Add("From export file...", null, (_, _) => ShowThenRun(_panel.ImportAccounts));
+        import.DropDownItems.Add("From QR image...", null, (_, _) => ShowThenRun(_panel.ImportFromQrImages));
+        import.DropDownItems.Add("Scan screen for QR code", null, (_, _) => ScanScreenForQr());
+        _menu.Items.Add(import);
+
         _menu.Items.Add(new ToolStripSeparator());
 
         _startupItem = new ToolStripMenuItem("Start with Windows")
@@ -65,7 +77,175 @@ public sealed class TrayContext : ApplicationContext
         _menu.Items.Add("About TrayAuth", null, (_, _) => ShowAbout());
         _menu.Items.Add(new ToolStripSeparator());
         _menu.Items.Add("Exit", null, (_, _) => ExitApplication());
+
+        _menu.Opening += OnMenuOpening;
+        _menu.Closed += (_, _) => _menuRefresh.Stop();
+        _menuRefresh.Tick += (_, _) => RefreshMenuCodes();
     }
+
+    /// <summary>
+    /// The top of the tray menu lists every account with its live code, so a code can be copied
+    /// without opening the panel at all. Items are rebuilt on every open (cheap, and always
+    /// current); while the menu stays open a one-second timer keeps the codes truthful across
+    /// the 30-second boundary.
+    /// </summary>
+    private void OnMenuOpening(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        ClearCodeItems();
+
+        IReadOnlyList<Account> accounts = _vault.Accounts;
+        int shown = Math.Min(accounts.Count, MaxMenuCodes);
+        int index = 0;
+
+        for (int i = 0; i < shown; i++)
+        {
+            Account account = accounts[i];
+
+            TotpCode code;
+            try
+            {
+                code = account.Generate();
+            }
+            catch
+            {
+                continue; // A broken entry shows its error in the panel; the menu just skips it.
+            }
+
+            var item = new ToolStripMenuItem(Truncate(account.FullName, 38))
+            {
+                ShortcutKeyDisplayString = FormatMenuCode(code),
+                Tag = account.Id,
+            };
+            item.Click += OnMenuCopyClick;
+
+            _codeItems.Add(item);
+            _menu.Items.Insert(index++, item);
+        }
+
+        if (accounts.Count > shown)
+        {
+            var overflow = new ToolStripMenuItem($"... and {accounts.Count - shown} more - open the panel")
+            {
+                Enabled = false,
+            };
+
+            _codeItems.Add(overflow);
+            _menu.Items.Insert(index++, overflow);
+        }
+
+        if (index > 0)
+        {
+            var separator = new ToolStripSeparator();
+            _codeItems.Add(separator);
+            _menu.Items.Insert(index, separator);
+            _menuRefresh.Start();
+        }
+    }
+
+    private void RefreshMenuCodes()
+    {
+        if (!_menu.Visible)
+        {
+            _menuRefresh.Stop();
+            return;
+        }
+
+        foreach (ToolStripItem entry in _codeItems)
+        {
+            if (entry is not ToolStripMenuItem item || item.Tag is not string id)
+            {
+                continue;
+            }
+
+            Account? account = _vault.Find(id);
+            if (account is null)
+            {
+                continue;
+            }
+
+            try
+            {
+                item.ShortcutKeyDisplayString = FormatMenuCode(account.Generate());
+            }
+            catch
+            {
+                // Leave the last shown value; the entry is broken and the panel says why.
+            }
+        }
+    }
+
+    private void OnMenuCopyClick(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem item || item.Tag is not string id)
+        {
+            return;
+        }
+
+        Account? account = _vault.Find(id);
+        if (account is null)
+        {
+            return;
+        }
+
+        try
+        {
+            // Recomputed at click time: the menu may have sat open past the code shown when it
+            // was built, and stale codes are worse than no feature.
+            TotpCode code = account.Generate();
+            _clipboard.TryCopy(code.Code);
+        }
+        catch
+        {
+            // Nothing sensible to copy.
+        }
+    }
+
+    private void ClearCodeItems()
+    {
+        foreach (ToolStripItem item in _codeItems)
+        {
+            _menu.Items.Remove(item);
+            item.Dispose();
+        }
+
+        _codeItems.Clear();
+    }
+
+    /// <summary>
+    /// Hides our always-on-top panel (which would otherwise photobomb its own capture), waits a
+    /// beat for it and this menu to leave the screen, then scans every monitor for QR codes.
+    /// </summary>
+    private void ScanScreenForQr()
+    {
+        _panel.HidePanelImmediate();
+
+        var delay = new System.Windows.Forms.Timer { Interval = 400 };
+        delay.Tick += (_, _) =>
+        {
+            delay.Stop();
+            delay.Dispose();
+
+            IReadOnlyList<string> texts;
+            try
+            {
+                texts = QrDecoder.DecodeAllScreens();
+            }
+            catch
+            {
+                texts = [];
+            }
+
+            _panel.ShowPanel();
+            _panel.HandleQrTexts(texts);
+        };
+
+        delay.Start();
+    }
+
+    private static string FormatMenuCode(TotpCode code) => $"{code.Grouped}  {code.SecondsRemaining,2}s";
+
+    private static string Truncate(string value, int max) =>
+        value.Length <= max ? value : value[..(max - 1)] + "...";
 
     private void LoadVault()
     {
@@ -147,7 +327,8 @@ public sealed class TrayContext : ApplicationContext
             Authenticator codes in the Windows tray.
 
             Show panel:   click the tray icon, or {hotkey}
-            Copy a code:  click it - the clipboard clears after 20 seconds
+            Copy a code:  click it in the panel, or right-click the tray icon
+                          - the clipboard clears itself after 20 seconds
             Vault:        {_vault.FilePath}
                           encrypted with your Windows account (DPAPI)
 
@@ -169,6 +350,7 @@ public sealed class TrayContext : ApplicationContext
     {
         if (disposing)
         {
+            _menuRefresh.Dispose();
             _hotKey.Dispose();
             _notifyIcon.Visible = false;
             _notifyIcon.Dispose();
