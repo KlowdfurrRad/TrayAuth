@@ -42,6 +42,12 @@ modules:
   # Clipboard for a background app on Wayland; the host's copy is invisible to the sandbox.
   - name: wl-clipboard
     buildsystem: meson
+    config-opts:
+      # Left to itself, meson asks pkg-config where fish completions go and is told
+      # /usr/share/fish - an absolute path outside the /app prefix, and read-only in the
+      # sandbox, so the install step dies. We only need the wl-copy binary.
+      - -Dfishcompletiondir=no
+      - -Dzshcompletiondir=no
     sources:
       - type: git
         url: https://github.com/bugaevc/wl-clipboard.git
