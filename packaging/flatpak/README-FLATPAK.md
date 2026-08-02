@@ -24,10 +24,19 @@ Build and install:
 git clone https://github.com/KlowdfurrRad/TrayAuth.git   # or: git -C TrayAuth pull
 cd TrayAuth/packaging/flatpak
 
-flatpak run org.flatpak.Builder --user --install --force-clean --repo=repo \
+flatpak run org.flatpak.Builder --user --install --force-clean --disable-rofiles-fuse --repo=repo \
     build io.github.KlowdfurrRad.TrayAuth.yml
 
 flatpak run io.github.KlowdfurrRad.TrayAuth
+```
+
+`--disable-rofiles-fuse` is needed because the builder is itself sandboxed and cannot use
+rofiles-fuse there; without it the build fails at the end with
+`Can't migrate locale dirs: Invalid cross-device link`. If it still fails, Flathub's own
+wrapper applies their standard options:
+
+```bash
+flatpak run --command=flathub-build org.flatpak.Builder --install io.github.KlowdfurrRad.TrayAuth.yml
 ```
 
 `nuget-sources.json` is already committed here, so there is nothing to generate first.
