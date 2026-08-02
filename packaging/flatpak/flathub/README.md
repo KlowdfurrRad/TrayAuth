@@ -42,6 +42,19 @@ skipped:
 So the app must be built and run as a Flatpak, and recorded, before the PR can pass the bot -
 the Flathub build bot is not a substitute for that.
 
+## Lint is mandatory, and is not optional politeness
+
+Both must pass before submitting - the same checks run on the PR:
+
+```bash
+flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest io.github.KlowdfurrRad.TrayAuth.yml
+flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo
+```
+
+Build with `--repo=repo` so the second command has a repository to inspect, and build using
+`org.flatpak.Builder` rather than the distro's `flatpak-builder` - the latter invokes
+`appstream-compose`, which no longer exists in the 24.08 runtime.
+
 ## After the PR is opened
 
 1. The Flathub bot builds the manifest and comments with a test install command - that is the

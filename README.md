@@ -175,15 +175,16 @@ planned — once it's live, this becomes `flatpak install flathub io.github.Klow
 To build it yourself on Ubuntu:
 
 ```bash
-# one-time setup
-sudo apt install -y flatpak flatpak-builder git python3 curl
+# one-time setup (org.flatpak.Builder, not the distro flatpak-builder - see README-FLATPAK.md)
+sudo apt install -y flatpak git
 flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-flatpak install --user -y flathub org.freedesktop.Platform//24.08 \
+flatpak install --user -y flathub org.flatpak.Builder org.freedesktop.Platform//24.08 \
     org.freedesktop.Sdk//24.08 org.freedesktop.Sdk.Extension.dotnet8//24.08
 
 # build, install, run
 cd packaging/flatpak
-flatpak-builder --user --install --force-clean build io.github.KlowdfurrRad.TrayAuth.yml
+flatpak run org.flatpak.Builder --user --install --force-clean --repo=repo \
+    build io.github.KlowdfurrRad.TrayAuth.yml
 flatpak run io.github.KlowdfurrRad.TrayAuth
 ```
 
