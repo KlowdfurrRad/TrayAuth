@@ -11,6 +11,12 @@
     <RootNamespace>TrayAuth.Core</RootNamespace>
     <AssemblyName>TrayAuth.Core</AssemblyName>
     <Version>1.1.0</Version>
+    <!-- Must match TrayAuth.Desktop exactly. A RID-specific restore resolves runtime packs
+         per project, so an unpinned project here picks whatever its SDK defaults to - which
+         is a different patch inside Flathub's dotnet8 extension than on the machine that
+         generated nuget-sources.json, and the offline build then fails on a missing package.
+         Any new project in this tree needs the same pin. -->
+    <RuntimeFrameworkVersion>8.0.29</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>

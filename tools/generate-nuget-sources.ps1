@@ -31,6 +31,32 @@ if ([string]::IsNullOrWhiteSpace($Output)) {
 $project = Join-Path $PSScriptRoot '..\src\TrayAuth.Desktop\TrayAuth.Desktop.csproj'
 $packages = Join-Path $env:LOCALAPPDATA 'TrayAuth-build\nuget-closure'
 
+# Every project in the restore graph must pin the same RuntimeFrameworkVersion. An unpinned
+# project resolves runtime packs from whatever its SDK defaults to, and Flathub's dotnet8
+# extension defaults to a different patch than the SDK here - so the offline build fails on a
+# package this list does not contain. A Windows restore cannot detect that, hence the check.
+$pins = @{}
+foreach ($csproj in @(
+    (Join-Path $PSScriptRoot '..\src\TrayAuth.Core\TrayAuth.Core.csproj'),
+    (Join-Path $PSScriptRoot '..\src\TrayAuth.Desktop\TrayAuth.Desktop.csproj')
+)) {
+    $name = Split-Path $csproj -Leaf
+    $match = Select-String -Path $csproj -Pattern '<RuntimeFrameworkVersion>([^<]+)</RuntimeFrameworkVersion>'
+
+    if (-not $match) {
+        throw "$name does not pin RuntimeFrameworkVersion. Every project restored for the Flatpak build must pin the same version, or the offline build will fail."
+    }
+
+    $pins[$name] = $match.Matches[0].Groups[1].Value
+}
+
+$distinct = @($pins.Values | Sort-Object -Unique)
+if ($distinct.Count -ne 1) {
+    $detail = ($pins.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }) -join ', '
+    throw "Projects pin different RuntimeFrameworkVersions ($detail). They must match."
+}
+
+Write-Host "RuntimeFrameworkVersion pinned consistently at $($distinct[0])."
 Write-Host 'Resolving the package closure (clean restore, linux-x64)...'
 
 if (Test-Path $packages) { Remove-Item $packages -Recurse -Force }
