@@ -1,25 +1,25 @@
-﻿# TrayAuth
+# TrayAuth
 
 Two-factor authentication codes in the Windows taskbar. Click the tray icon and a panel slides up
 out of the taskbar with your live codes; click a code to copy it.
 
-Accounts are added by typing the **setup key** â€” the base32 string a site shows next to its QR
+Accounts are added by typing the **setup key** — the base32 string a site shows next to its QR
 image, usually behind a "can't scan the code?" link.
 
 ```
-                                      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                                      â”‚  Authenticator      +   â‹¯  â”‚
-                                      â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-                                      â”‚  GitHub Â· you@example.com  â”‚
-                                      â”‚  482 913              â—œ21â— â”‚
-                                      â”‚                            â”‚
-                                      â”‚  AWS Â· root                â”‚
-                                      â”‚  105 774              â—œ21â— â”‚
-                                      â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-                                      â”‚  +  Add account            â”‚
-                                      â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€[ðŸ”]â”€â”€â”€â”€â”€â”€
-                                                        tray icon â–²
+                                      ┌────────────────────────────┐
+                                      │  Authenticator      +   ⋯  │
+                                      ├────────────────────────────┤
+                                      │  GitHub · you@example.com  │
+                                      │  482 913              ◜21◝ │
+                                      │                            │
+                                      │  AWS · root                │
+                                      │  105 774              ◜21◝ │
+                                      ├────────────────────────────┤
+                                      │  +  Add account            │
+                                      └────────────────────────────┘
+  ──────────────────────────────────────────────────────────[🔐]──────
+                                                        tray icon ▲
 ```
 
 ## Install
@@ -31,12 +31,12 @@ winget install KlowdfurrRad.TrayAuth
 Or download `TrayAuth-Setup-*.exe` from the
 [Releases page](https://github.com/KlowdfurrRad/TrayAuth/releases) and run it.
 
-Either way you get a Start Menu entry, an entry in Settings â†’ Installed apps, and start-with-Windows
-so the icon is always in the tray. **No administrator rights and no UAC prompt** â€” everything lives
+Either way you get a Start Menu entry, an entry in Settings → Installed apps, and start-with-Windows
+so the icon is always in the tray. **No administrator rights and no UAC prompt** — everything lives
 under `HKCU` and `%LOCALAPPDATA%`. The installer bundles the .NET runtime, so there is nothing else
 to install.
 
-To remove it, use Settings â†’ Installed apps. Your accounts are kept unless you say otherwise when
+To remove it, use Settings → Installed apps. Your accounts are kept unless you say otherwise when
 asked.
 
 ## Using it
@@ -44,27 +44,27 @@ asked.
 | | |
 |---|---|
 | Open the panel | Click the tray icon, or press **Ctrl+Alt+A** |
-| Copy a code | Click it in the panel â€” or **right-click the tray icon** and click it there, no panel needed. Either way the clipboard clears itself 20 seconds later |
+| Copy a code | Click it in the panel — or **right-click the tray icon** and click it there, no panel needed. Either way the clipboard clears itself 20 seconds later |
 | Add an account | The **+** button, or **Add account** at the bottom |
 | Edit / export / delete one | Right-click its row |
-| Export everything | Tray menu â†’ **Export all accountsâ€¦** |
-| Restore a backup | Tray menu â†’ **Import** â†’ **From export fileâ€¦** |
-| Move in from Google Authenticator | Phone: *Settings â†’ Transfer accounts â†’ Export accounts*, screenshot the QR, get it to this PC, then tray menu â†’ **Import** â†’ **From QR imageâ€¦** â€” or show the QR on this screen and use **Scan screen for QR code** |
-| Copy from the desktop | Right-click the desktop â†’ **TrayAuth codes** (on Windows 11 it lives under **Show more options**, or press Shift+F10). Click an account to copy its code |
+| Export everything | Tray menu → **Export all accounts…** |
+| Restore a backup | Tray menu → **Import** → **From export file…** |
+| Move in from Google Authenticator | Phone: *Settings → Transfer accounts → Export accounts*, screenshot the QR, get it to this PC, then tray menu → **Import** → **From QR image…** — or show the QR on this screen and use **Scan screen for QR code** |
+| Copy from the desktop | Right-click the desktop → **TrayAuth codes** (on Windows 11 it lives under **Show more options**, or press Shift+F10). Click an account to copy its code |
 | Close the panel | Click anywhere else, or press **Esc** |
 
 The right-click menu shows every account with its live code and seconds remaining, so day-to-day
 copying never needs the panel at all.
 
 The desktop menu works the same way: the labels show live codes (TrayAuth refreshes them as codes
-roll over), and clicking computes a fresh code at that instant â€” a label that went stale while the
+roll over), and clicking computes a fresh code at that instant — a label that went stale while the
 menu sat open can never produce a stale copy. The codes are visible to anyone looking at your
 unlocked screen, exactly like the tray menu; if you'd rather not have that, turn it off with tray
-menu â†’ **Codes in desktop right-click menu**.
+menu → **Codes in desktop right-click menu**.
 
 QR import understands both kinds of QR: a site's ordinary `otpauth://` enrollment QR, and Google
 Authenticator's transfer QR (`otpauth-migration://`), which can carry many accounts at once. If a
-transfer spans several QRs, scan them together or one after another â€” TrayAuth tells you when part
+transfer spans several QRs, scan them together or one after another — TrayAuth tells you when part
 of the set is still missing. Counter-based (HOTP) entries are skipped and reported by name-count,
 never silently.
 
@@ -74,7 +74,7 @@ copy in the meantime is left alone.
 ### Adding an account
 
 Fill in the issuer (the service), your account name there, and the setup key. Case, spaces and
-hyphens in the key don't matter â€” paste it however the site prints it.
+hyphens in the key don't matter — paste it however the site prints it.
 
 The dialog shows the code your key produces as you type. **Check it matches the code the site is
 showing before you save.** That is the whole point of the preview: a mistyped key that you only
@@ -82,32 +82,32 @@ discover later means turning 2FA off and on again at that site.
 
 Most services use the defaults (6 digits, 30 seconds, SHA1). If yours doesn't, open **Advanced**.
 
-## Backups â€” read this one
+## Backups — read this one
 
 Your accounts are encrypted with your Windows user account (DPAPI). That means the vault file is
 useless to anyone who copies it, and unreadable by any other Windows profile.
 
 It also means **a DPAPI vault dies with the Windows profile that wrote it**. Reinstall Windows, lose
-the profile, or move to a new PC, and `vault.dat` cannot be read again â€” by you or anyone.
+the profile, or move to a new PC, and `vault.dat` cannot be read again — by you or anyone.
 
 So export your accounts:
 
-> Tray menu â†’ **Export all accountsâ€¦**
+> Tray menu → **Export all accounts…**
 
 You get a folder like this:
 
 ```
 TrayAuth-export-2026-07-28-1430/
-  TrayAuth-export.json              every account â€” import this to restore everything
+  TrayAuth-export.json              every account — import this to restore everything
   READ ME - keep these files safe.txt
   GitHub - you@example.com.json     one account, same importable format
-  GitHub - you@example.com.png      QR code â€” scan it with the app on your phone
+  GitHub - you@example.com.png      QR code — scan it with the app on your phone
   AWS - root.json
   AWS - root.png
 ```
 
 The `.png` files are ordinary QR codes. Scanning one with Google Authenticator, Authy or 1Password
-adds that account there â€” which is a good second copy to keep, independent of this machine.
+adds that account there — which is a good second copy to keep, independent of this machine.
 
 **The exported files are not encrypted.** Each one holds the secret that mints that account's codes
 forever, so treat the folder like the passwords themselves: keep it off cloud sync and shared
@@ -117,19 +117,19 @@ drives, and delete it once you have put it somewhere you trust.
 
 | | |
 |---|---|
-| Accounts | `%APPDATA%\TrayAuth\vault.dat` â€” DPAPI-encrypted, ACL'd to you |
+| Accounts | `%APPDATA%\TrayAuth\vault.dat` — DPAPI-encrypted, ACL'd to you |
 | Program | `%LOCALAPPDATA%\Programs\TrayAuth` |
-| Default export folder | `%LOCALAPPDATA%\TrayAuth\exports` â€” local, deliberately not OneDrive |
+| Default export folder | `%LOCALAPPDATA%\TrayAuth\exports` — local, deliberately not OneDrive |
 | Build output | `%LOCALAPPDATA%\TrayAuth-build` |
 
 If the vault is ever unreadable, TrayAuth renames it to `vault.dat.bad`, tells you, and starts
-empty â€” it never deletes it, in case the failure turns out to be recoverable.
+empty — it never deletes it, in case the failure turns out to be recoverable.
 
 ## Linux and macOS (alpha)
 
 `src/TrayAuth.Desktop` is one Avalonia app covering both: a tray / menu-bar icon whose menu carries
-live codes, the same vault document sealed with AES-256-GCM, and the same export files â€” so accounts
-move between all three platforms by export â†’ import, and the codes match digit-for-digit.
+live codes, the same vault document sealed with AES-256-GCM, and the same export files — so accounts
+move between all three platforms by export → import, and the codes match digit-for-digit.
 
 The vault key lives in whatever each OS offers: the **macOS Keychain** via `security`, the **GNOME
 keyring** via `secret-tool` on Linux, with a `0600` key-file fallback if neither answers. All logic
@@ -146,7 +146,7 @@ sh install.sh                                                  # into ~/Applicat
 open ~/Applications/TrayAuth.app
 ```
 
-It's a menu-bar app (`LSUIElement`) â€” no Dock icon, by design. Unsigned, so `install.sh` clears the
+It's a menu-bar app (`LSUIElement`) — no Dock icon, by design. Unsigned, so `install.sh` clears the
 download quarantine flag; without that Gatekeeper blocks the first launch. Details:
 [`packaging/macos/README-MACOS.md`](packaging/macos/README-MACOS.md).
 
@@ -171,7 +171,7 @@ their own windows), no global hotkey yet, QR import from image files only. `buil
 ### Flatpak
 
 A sandboxed Flatpak build lives in [`packaging/flatpak/`](packaging/flatpak/) (Flathub submission
-planned â€” once it's live, this becomes `flatpak install flathub io.github.KlowdfurrRad.TrayAuth`).
+planned — once it's live, this becomes `flatpak install flathub io.github.KlowdfurrRad.TrayAuth`).
 To build it yourself on Ubuntu:
 
 ```bash
@@ -183,16 +183,19 @@ flatpak install --user -y flathub org.flatpak.Builder org.freedesktop.Platform//
 
 # build, install, run
 cd packaging/flatpak
-flatpak run org.flatpak.Builder --user --install --force-clean --repo=repo \
-    build io.github.KlowdfurrRad.TrayAuth.yml
+flatpak run org.flatpak.Builder --user --install --force-clean --disable-rofiles-fuse \
+    --repo=repo build io.github.KlowdfurrRad.TrayAuth.yml
 flatpak run io.github.KlowdfurrRad.TrayAuth
 ```
+
+`--disable-rofiles-fuse` is required because the builder is itself sandboxed and cannot use
+rofiles-fuse there.
 
 The pinned NuGet package list is already committed, so there is nothing to generate first.
 
 The sandbox bundles its own `wl-copy` and `secret-tool` (host binaries are invisible inside), asks
 for no filesystem access (file dialogs go through the portal), and keeps its vault in the app's own
-sandboxed config â€” move accounts between the flatpak and the tarball install via export â†’ import.
+sandboxed config — move accounts between the flatpak and the tarball install via export → import.
 "Start on login" is hidden inside the flatpak until the Background portal is wired up. Details and
 the verification checklist: [`packaging/flatpak/README-FLATPAK.md`](packaging/flatpak/README-FLATPAK.md).
 
@@ -211,8 +214,8 @@ dotnet test                              # tests on their own
 dotnet run --project src\TrayAuth        # run without installing
 ```
 
-`build.ps1` refuses to publish if the tests fail. `Install.bat` does the whole thing â€”
-build, package, install â€” in one double-click.
+`build.ps1` refuses to publish if the tests fail. `Install.bat` does the whole thing —
+build, package, install — in one double-click.
 
 ### Layout
 
@@ -235,7 +238,7 @@ with every other authenticator in existence.
 
 ## What it deliberately doesn't do
 
-- **Use a webcam.** QR import reads image files and your screen, not a camera â€” screenshot the
+- **Use a webcam.** QR import reads image files and your screen, not a camera — screenshot the
   QR instead.
 - **Import HOTP.** Counter-based entries have no clock to agree on and TrayAuth doesn't track
   counters; they are skipped with a note rather than imported wrong.
