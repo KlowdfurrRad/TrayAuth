@@ -15,9 +15,11 @@ Author: Raadhes Chandaluru
 PackageName: TrayAuth
 PackageUrl: https://github.com/KlowdfurrRad/TrayAuth
 License: MIT
-LicenseUrl: https://github.com/KlowdfurrRad/TrayAuth/blob/main/LICENSE
+# Pinned to the release tag, not main: the defaultLocale guidance wants open-source projects
+# to link the version-specific license file. Bump the tag with each version.
+LicenseUrl: https://github.com/KlowdfurrRad/TrayAuth/blob/v1.0.0/LICENSE
 Copyright: Copyright (c) 2026 Raadhes Chandaluru
-CopyrightUrl: https://github.com/KlowdfurrRad/TrayAuth/blob/main/LICENSE
+CopyrightUrl: https://github.com/KlowdfurrRad/TrayAuth/blob/v1.0.0/LICENSE
 
 ShortDescription: Authenticator codes in the Windows tray, in a panel that slides out of the taskbar.
 Description: |-
