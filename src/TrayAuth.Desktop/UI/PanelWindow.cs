@@ -307,9 +307,15 @@ public sealed class PanelWindow : Window
     private async Task ExportOneAsync(Account account)
     {
         IReadOnlyList<IStorageFolder> folders = await PickFolderAsync($"Choose where to save \"{account.FullName}\"");
-        string? directory = folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
+        if (folders.Count == 0)
+        {
+            return; // cancelled
+        }
+
+        string? directory = folders[0].TryGetLocalPath();
         if (directory is null)
         {
+            await ExplainPortalOnlyLocation("Export");
             return;
         }
 
@@ -336,9 +342,15 @@ public sealed class PanelWindow : Window
         }
 
         IReadOnlyList<IStorageFolder> folders = await PickFolderAsync("Choose where to save the export folder");
-        string? parent = folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
+        if (folders.Count == 0)
+        {
+            return; // cancelled
+        }
+
+        string? parent = folders[0].TryGetLocalPath();
         if (parent is null)
         {
+            await ExplainPortalOnlyLocation("Export");
             return;
         }
 
@@ -356,6 +368,15 @@ public sealed class PanelWindow : Window
         }
     }
 
+    /// <summary>
+    /// The picker returned something, but it has no plain filesystem path - a portal-only or
+    /// virtual location. Silence here read as "the button does nothing", so say what happened.
+    /// </summary>
+    private Task ExplainPortalOnlyLocation(string title) => RunModal(() => MessageDialog.ShowOk(
+        this,
+        title,
+        "That location has no plain filesystem path (it may be a network or portal-only location), so TrayAuth cannot use it.\n\nPick a folder on the local disk instead."));
+
     public async Task ImportFromFileAsync()
     {
         IReadOnlyList<IStorageFile> files = await PickFilesAsync(
@@ -363,9 +384,15 @@ public sealed class PanelWindow : Window
             new FilePickerFileType("TrayAuth export") { Patterns = ["*.json", "*.txt"] },
             allowMultiple: false);
 
-        string? path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
+        if (files.Count == 0)
+        {
+            return; // cancelled
+        }
+
+        string? path = files[0].TryGetLocalPath();
         if (path is null)
         {
+            await ExplainPortalOnlyLocation("Import");
             return;
         }
 
@@ -400,6 +427,7 @@ public sealed class PanelWindow : Window
             string? path = file.TryGetLocalPath();
             if (path is null)
             {
+                unreadable.Add(file.Name);
                 continue;
             }
 

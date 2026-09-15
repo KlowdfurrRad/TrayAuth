@@ -10,6 +10,14 @@ namespace TrayAuth.UI;
 /// </summary>
 public sealed class PanelForm : Form
 {
+    /// <summary>
+    /// Window text a second instance uses to find this panel and post the show-panel message
+    /// straight to it. Broadcasts of registered messages are silently dropped on current
+    /// Windows 11 builds, so the summon must be addressed, not shouted. The form is borderless
+    /// and absent from the taskbar and Alt+Tab, so the text is never drawn anywhere.
+    /// </summary>
+    public const string WindowName = "TrayAuth.Panel.4C1F0C9E";
+
     private const int SlideDurationMs = 160;
     private const int FrameIntervalMs = 15;
 
@@ -39,6 +47,8 @@ public sealed class PanelForm : Form
         _vault = vault;
         _clipboard = clipboard;
 
+        Text = WindowName;
+        AccessibleName = "TrayAuth";
         FormBorderStyle = FormBorderStyle.None;
         ShowInTaskbar = false;
         StartPosition = FormStartPosition.Manual;

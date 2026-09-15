@@ -357,7 +357,7 @@ public sealed class TrayContext : ApplicationContext
 
         _panel.ShowMessage(
             $"""
-            TrayAuth 1.0
+            TrayAuth {typeof(TrayContext).Assembly.GetName().Version?.ToString(3)}
 
             Authenticator codes in the Windows tray.
 

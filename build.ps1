@@ -28,7 +28,7 @@ param(
     [switch]$Installer,
     [switch]$SelfContained,
     [switch]$SkipTests,
-    [string]$Version = '1.1.0'
+    [string]$Version = '1.1.1'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -51,6 +51,16 @@ Write-Host '--------------'
 $sdk = & dotnet --list-sdks
 if ($LASTEXITCODE -ne 0 -or -not ($sdk | Select-String -SimpleMatch '8.0')) {
     throw "The .NET 8 SDK was not found. Install it with:  winget install Microsoft.DotNet.SDK.8 --source winget"
+}
+
+# An installer built from a dirty tree carries the last COMMIT's hash in its ProductVersion
+# while containing uncommitted code - the stamp lies about the contents, which once cost a
+# whole debugging session. Installers must come from a clean tree; plain dev builds may be dirty.
+if ($Installer) {
+    $dirty = & git -C $root status --porcelain
+    if ($LASTEXITCODE -eq 0 -and $dirty) {
+        throw "The working tree has uncommitted changes. Commit (or stash) before building an installer, so the version stamp matches the contents:`n$($dirty -join "`n")"
+    }
 }
 
 # --- icon ---------------------------------------------------------------------------------

@@ -31,9 +31,27 @@ internal static class Program
         {
             // Already running. Ask the live instance to show its panel and get out of the way,
             // so launching the shortcut again summons the codes rather than a second tray icon.
+            //
+            // The message is posted to the panel window directly. HWND_BROADCAST delivery of
+            // registered messages is silently dropped on current Windows 11 builds - the summon
+            // did nothing at all - so the broadcast survives only as a fallback for the moment
+            // the panel's handle is being recreated.
             if (showPanelMessage != 0)
             {
-                NativeMethods.PostMessageW(NativeMethods.HWND_BROADCAST, showPanelMessage, IntPtr.Zero, IntPtr.Zero);
+                IntPtr panel = NativeMethods.FindWindowW(null, PanelForm.WindowName);
+
+                if (panel != IntPtr.Zero)
+                {
+                    // This process was just launched by the user, so it holds the foreground
+                    // grant; hand it to the running instance so the panel can take focus.
+                    NativeMethods.GetWindowThreadProcessId(panel, out uint ownerPid);
+                    NativeMethods.AllowSetForegroundWindow(ownerPid);
+                    NativeMethods.PostMessageW(panel, showPanelMessage, IntPtr.Zero, IntPtr.Zero);
+                }
+                else
+                {
+                    NativeMethods.PostMessageW(NativeMethods.HWND_BROADCAST, showPanelMessage, IntPtr.Zero, IntPtr.Zero);
+                }
             }
 
             return;
