@@ -149,13 +149,20 @@ public sealed class AccountRow : UserControl
             RenderMode = ToolStripRenderMode.System,
         };
 
-        menu.Items.Add("Copy code", null, (_, _) => CopyRequested?.Invoke(this, EventArgs.Empty)).Enabled = !_error;
-        menu.Items.Add("Edit…", null, (_, _) => EditRequested?.Invoke(this, EventArgs.Empty));
-        menu.Items.Add("Export…", null, (_, _) => ExportRequested?.Invoke(this, EventArgs.Empty));
+        // Every action is deferred with BeginInvoke. Edit/Export/Delete open modal dialogs, and
+        // a modal loop inside a ToolStripItem.Click lets this menu auto-close - and, below,
+        // dispose itself - while WinForms' dismissal code still holds it, which then dies with
+        // ObjectDisposedException in SetVisibleCore on the way out. Deferring lets the click
+        // return and the menu fully dismiss before any dialog can open.
+        menu.Items.Add("Copy code", null, (_, _) => BeginInvoke(() => CopyRequested?.Invoke(this, EventArgs.Empty))).Enabled = !_error;
+        menu.Items.Add("Edit…", null, (_, _) => BeginInvoke(() => EditRequested?.Invoke(this, EventArgs.Empty)));
+        menu.Items.Add("Export…", null, (_, _) => BeginInvoke(() => ExportRequested?.Invoke(this, EventArgs.Empty)));
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add("Delete…", null, (_, _) => DeleteRequested?.Invoke(this, EventArgs.Empty));
+        menu.Items.Add("Delete…", null, (_, _) => BeginInvoke(() => DeleteRequested?.Invoke(this, EventArgs.Empty)));
 
-        menu.Closed += (_, _) => menu.Dispose();
+        // Disposal is deferred for the same reason: Closed fires while the dismissal machinery
+        // is still using the strip.
+        menu.Closed += (_, _) => BeginInvoke(menu.Dispose);
         menu.Show(this, location);
     }
 
