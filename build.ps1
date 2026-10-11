@@ -28,7 +28,7 @@ param(
     [switch]$Installer,
     [switch]$SelfContained,
     [switch]$SkipTests,
-    [string]$Version = '1.1.2'
+    [string]$Version = '1.1.3'
 )
 
 $ErrorActionPreference = 'Stop'

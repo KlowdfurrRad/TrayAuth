@@ -9,8 +9,12 @@ namespace TrayAuth.UI;
 /// </summary>
 public sealed class AccountRow : UserControl
 {
+    // 96-dpi design units; scaled per monitor at paint time, like every other metric here.
     private const int ArcRadius = 13;
     private const int ArcThickness = 3;
+
+    /// <summary>96-dpi design units to pixels for the monitor this row is shown on.</summary>
+    private int S(int designUnits) => Theme.Scale(this, designUnits);
 
     private readonly Account _account;
 
@@ -30,6 +34,7 @@ public sealed class AccountRow : UserControl
             ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint,
             true);
 
+        // Approximate defaults; PanelForm assigns the real monitor-scaled size on reload.
         Height = Theme.RowHeight;
         Width = Theme.PanelWidth;
         Margin = Padding.Empty;
@@ -172,19 +177,19 @@ public sealed class AccountRow : UserControl
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-        var body = new Rectangle(6, 3, Width - 12, Height - 6);
+        var body = new Rectangle(S(6), S(3), Width - S(12), Height - S(6));
 
-        using (var path = Theme.RoundedRect(body, 8))
+        using (var path = Theme.RoundedRect(body, S(8)))
         using (var brush = new SolidBrush(_hovered ? Theme.SurfaceHover : Theme.Surface))
         {
             g.FillPath(brush, path);
         }
 
         bool showCopied = DateTime.UtcNow < _copiedUntil;
-        int textLeft = body.Left + 12;
-        int arcCenterX = body.Right - 26;
+        int textLeft = body.Left + S(12);
+        int arcCenterX = body.Right - S(26);
 
-        DrawTitle(g, textLeft, arcCenterX - textLeft - 12);
+        DrawTitle(g, textLeft, arcCenterX - textLeft - S(12));
 
         if (_error)
         {
@@ -217,19 +222,19 @@ public sealed class AccountRow : UserControl
             Trimming = StringTrimming.EllipsisCharacter,
         };
 
-        var titleBounds = new RectangleF(left, 9, available, 16);
+        var titleBounds = new RectangleF(left, S(9), available, S(16));
         g.DrawString(title, Theme.Small, titleBrush, titleBounds, format);
 
         if (subtitle.Length > 0)
         {
             SizeF titleSize = g.MeasureString(title, Theme.Small, available, format);
-            float subtitleLeft = left + titleSize.Width + 4;
+            float subtitleLeft = left + titleSize.Width + S(4);
             float subtitleWidth = (left + available) - subtitleLeft;
 
-            if (subtitleWidth > 24)
+            if (subtitleWidth > S(24))
             {
                 g.DrawString("· " + subtitle, Theme.Small, subtitleBrush,
-                    new RectangleF(subtitleLeft, 9, subtitleWidth, 16), format);
+                    new RectangleF(subtitleLeft, S(9), subtitleWidth, S(16)), format);
             }
         }
     }
@@ -237,7 +242,7 @@ public sealed class AccountRow : UserControl
     private void DrawCode(Graphics g, int left)
     {
         using var brush = new SolidBrush(Theme.Text);
-        g.DrawString(_code, Theme.Code, brush, new PointF(left - 2, 25));
+        g.DrawString(_code, Theme.Code, brush, new PointF(left - S(2), S(25)));
     }
 
     private void DrawError(Graphics g, Rectangle body, int left)
@@ -252,15 +257,17 @@ public sealed class AccountRow : UserControl
             _errorText.Length > 0 ? _errorText : "This account's key is not valid.",
             Theme.Body,
             brush,
-            new RectangleF(left, 30, body.Width - 24, 18),
+            new RectangleF(left, S(30), body.Width - S(24), S(18)),
             format);
     }
 
     private void DrawCountdown(Graphics g, int centerX, int centerY)
     {
-        var arcBounds = new Rectangle(centerX - ArcRadius, centerY - ArcRadius, ArcRadius * 2, ArcRadius * 2);
+        int radius = S(ArcRadius);
+        float thickness = Theme.ScaleF(this, ArcThickness);
+        var arcBounds = new Rectangle(centerX - radius, centerY - radius, radius * 2, radius * 2);
 
-        using (var track = new Pen(Theme.Border, ArcThickness))
+        using (var track = new Pen(Theme.Border, thickness))
         {
             g.DrawEllipse(track, arcBounds);
         }
@@ -271,7 +278,7 @@ public sealed class AccountRow : UserControl
 
         if (sweep > 0.5f)
         {
-            using var pen = new Pen(color, ArcThickness)
+            using var pen = new Pen(color, thickness)
             {
                 StartCap = LineCap.Round,
                 EndCap = LineCap.Round,
@@ -297,10 +304,10 @@ public sealed class AccountRow : UserControl
 
     private void DrawCopiedPill(Graphics g, Rectangle body)
     {
-        const int pillWidth = 62;
-        const int pillHeight = 22;
+        int pillWidth = S(62);
+        int pillHeight = S(22);
 
-        var pill = new Rectangle(body.Right - pillWidth - 10, body.Top + ((body.Height - pillHeight) / 2), pillWidth, pillHeight);
+        var pill = new Rectangle(body.Right - pillWidth - S(10), body.Top + ((body.Height - pillHeight) / 2), pillWidth, pillHeight);
 
         using (var path = Theme.RoundedRect(pill, pillHeight / 2))
         using (var brush = new SolidBrush(Theme.AccentDim))

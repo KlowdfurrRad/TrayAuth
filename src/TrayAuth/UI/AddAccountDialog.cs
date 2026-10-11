@@ -31,6 +31,11 @@ public sealed class AddAccountDialog : Form
     {
         _existingId = existing?.Id ?? Guid.NewGuid().ToString("N");
 
+        // The designer's suspend/resume bracket: auto-scaling applies the 96-dpi -> monitor-dpi
+        // delta to everything built in between when layout resumes. Without the bracket the
+        // delta is consumed before any control exists and nothing scales.
+        SuspendLayout();
+
         Text = existing is null ? "Add account" : "Edit account";
         FormBorderStyle = FormBorderStyle.FixedDialog;
         StartPosition = FormStartPosition.CenterParent;
@@ -40,9 +45,16 @@ public sealed class AddAccountDialog : Form
         BackColor = Theme.Background;
         ForeColor = Theme.Text;
         Font = Theme.Body;
+        // The layout below is authored at 96 dpi; WinForms rescales every control and the
+        // client size for the actual monitor DPI, so high-DPI screens get room for their
+        // proportionally larger fonts.
+        AutoScaleMode = AutoScaleMode.Dpi;
+        AutoScaleDimensions = new SizeF(96f, 96f);
         ClientSize = new Size(400, 400);
 
         BuildLayout();
+        ResumeLayout(false);
+        PerformLayout();
 
         if (existing is not null)
         {

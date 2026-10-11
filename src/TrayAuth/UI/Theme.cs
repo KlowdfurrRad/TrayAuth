@@ -27,6 +27,18 @@ public static class Theme
     /// <summary>Rows visible before the list starts scrolling.</summary>
     public const int MaxVisibleRows = 6;
 
+    /// <summary>
+    /// Converts 96-dpi design units to pixels on the monitor the control is on. The layout
+    /// constants above are authored at 96 dpi, but the point-sized fonts already follow the
+    /// monitor's DPI - so every box and inset must follow it too, or a 150% laptop squeezes
+    /// enlarged text into unenlarged rectangles.
+    /// </summary>
+    public static int Scale(Control control, int designUnits) =>
+        (int)Math.Round(designUnits * (double)control.DeviceDpi / 96d);
+
+    public static float ScaleF(Control control, float designUnits) =>
+        designUnits * control.DeviceDpi / 96f;
+
     public static Font Title { get; } = new("Segoe UI Semibold", 10f, FontStyle.Bold);
 
     public static Font Body { get; } = new("Segoe UI", 9f);

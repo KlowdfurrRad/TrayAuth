@@ -56,8 +56,8 @@ public sealed class PanelForm : Form
         BackColor = Theme.Background;
         DoubleBuffered = true;
         KeyPreview = true;
-        Width = Theme.PanelWidth;
-        Height = 260;
+        Width = S(Theme.PanelWidth);
+        Height = S(260);
         Opacity = 0d;
 
         BuildChrome();
@@ -94,12 +94,15 @@ public sealed class PanelForm : Form
         }
     }
 
+    /// <summary>96-dpi design units to pixels for the monitor this panel lives on.</summary>
+    private int S(int designUnits) => Theme.Scale(this, designUnits);
+
     private void BuildChrome()
     {
         var header = new Panel
         {
             Dock = DockStyle.Top,
-            Height = Theme.HeaderHeight,
+            Height = S(Theme.HeaderHeight),
             BackColor = Theme.Background,
         };
 
@@ -109,7 +112,7 @@ public sealed class PanelForm : Form
             Font = Theme.Title,
             ForeColor = Theme.Text,
             AutoSize = true,
-            Location = new Point(14, 13),
+            Location = new Point(S(14), S(13)),
             BackColor = Color.Transparent,
         };
 
@@ -121,8 +124,8 @@ public sealed class PanelForm : Form
 
         header.Resize += (_, _) =>
         {
-            menuButton.Location = new Point(header.Width - 36, 9);
-            addButton.Location = new Point(header.Width - 66, 9);
+            menuButton.Location = new Point(header.Width - S(36), S(9));
+            addButton.Location = new Point(header.Width - S(66), S(9));
         };
 
         header.Controls.Add(title);
@@ -132,7 +135,7 @@ public sealed class PanelForm : Form
         _list.Dock = DockStyle.Fill;
         _list.AutoScroll = true;
         _list.BackColor = Theme.Background;
-        _list.Padding = new Padding(0, 2, 0, 6);
+        _list.Padding = new Padding(0, S(2), 0, S(6));
 
         _emptyState.Text = "No accounts yet.\r\n\r\nAdd one with the + button and paste in the\r\nsetup key the site shows next to its QR code.";
         _emptyState.Font = Theme.Body;
@@ -144,7 +147,7 @@ public sealed class PanelForm : Form
         var footer = new Panel
         {
             Dock = DockStyle.Bottom,
-            Height = Theme.FooterHeight,
+            Height = S(Theme.FooterHeight),
             BackColor = Theme.Background,
         };
 
@@ -154,7 +157,7 @@ public sealed class PanelForm : Form
             Font = Theme.Body,
             ForeColor = Theme.Accent,
             AutoSize = true,
-            Location = new Point(16, 13),
+            Location = new Point(S(16), S(13)),
             Cursor = Cursors.Hand,
             BackColor = Color.Transparent,
         };
@@ -170,7 +173,7 @@ public sealed class PanelForm : Form
         _emptyState.BringToFront();
     }
 
-    private static Label MakeHeaderButton(string glyph, string tooltip)
+    private Label MakeHeaderButton(string glyph, string tooltip)
     {
         var button = new Label
         {
@@ -178,7 +181,7 @@ public sealed class PanelForm : Form
             Font = new Font("Segoe UI", 12f, FontStyle.Bold),
             ForeColor = Theme.TextSecondary,
             TextAlign = ContentAlignment.MiddleCenter,
-            Size = new Size(26, 26),
+            Size = new Size(S(26), S(26)),
             Cursor = Cursors.Hand,
             BackColor = Color.Transparent,
         };
@@ -207,12 +210,14 @@ public sealed class PanelForm : Form
         _rows.Clear();
 
         int y = 0;
+        int rowHeight = S(Theme.RowHeight);
         foreach (Account account in _vault.Accounts)
         {
             var row = new AccountRow(account)
             {
                 Location = new Point(0, y),
-                Width = Theme.PanelWidth - 4,
+                Width = Width - S(4),
+                Height = rowHeight,
             };
 
             row.CopyRequested += (s, _) => CopyFrom((AccountRow)s!);
@@ -223,7 +228,7 @@ public sealed class PanelForm : Form
             _list.Controls.Add(row);
             _rows.Add(row);
 
-            y += Theme.RowHeight;
+            y += rowHeight;
         }
 
         _list.ResumeLayout();
@@ -236,9 +241,9 @@ public sealed class PanelForm : Form
     private void ResizeToContent()
     {
         int visibleRows = Math.Clamp(_rows.Count, 1, Theme.MaxVisibleRows);
-        int listHeight = _rows.Count == 0 ? 110 : (visibleRows * Theme.RowHeight) + 8;
+        int listHeight = _rows.Count == 0 ? S(110) : (visibleRows * S(Theme.RowHeight)) + S(8);
 
-        Height = Theme.HeaderHeight + listHeight + Theme.FooterHeight;
+        Height = S(Theme.HeaderHeight) + listHeight + S(Theme.FooterHeight);
     }
 
     private void RefreshCodes()
@@ -687,7 +692,7 @@ public sealed class PanelForm : Form
         Point anchor = Cursor.Position;
         TaskbarPlacement placement = TaskbarInfo.ForPoint(anchor);
 
-        _shownLocation = TaskbarInfo.ShownLocation(placement, Size, anchor);
+        _shownLocation = TaskbarInfo.ShownLocation(placement, Size, anchor, S(8));
         _hiddenLocation = TaskbarInfo.HiddenLocation(placement, Size, _shownLocation);
 
         Location = IsShown ? Location : _hiddenLocation;
